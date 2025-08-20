@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from app.settings import settings
-from app.api.routers import auth as auth_router, chat as chat_router
+from app.api.routers import auth as auth_router, conversation as conversation_router, message as message_router, chat as chat_router
 from fastapi import FastAPI
 import logging
 
@@ -32,7 +32,9 @@ app.add_middleware(
     https_only=False if settings.debug else True
 )
 
+app.include_router(conversation_router.router)
 app.include_router(auth_router.router)
+app.include_router(message_router.router)
 app.include_router(chat_router.router)
 
 @app.get("/")

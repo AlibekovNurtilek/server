@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_session
 from typing import Optional
-from app.db.repositories.customers import CustomerRepository
+from app.db.repositories.customer_repository import CustomerRepository
 
 SESSION_KEY = "user_id"
 

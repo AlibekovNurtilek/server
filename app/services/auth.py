@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
 from app.db.models import Customer
-from app.db.repositories.customers import CustomerRepository
+from app.db.repositories.customer_repository import CustomerRepository
 from app.services.security import hash_password, verify_password
 
 class AuthService:
