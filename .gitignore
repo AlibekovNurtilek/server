@@ -1,0 +1,12 @@
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+*$py.class
+# Тесты и типы
+.pytest_cache/
+.mypy_cache/
+
+# Виртуальные окружения
+.venv/
+venv/
+.env
