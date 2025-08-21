@@ -8,6 +8,7 @@ from app.api.deps import get_current_customer, get_db_session
 from app.services.chat_service import ChatService
 from app.schemas.chat import ChatCreate, ChatUpdate, Chat
 from app.db.models import Customer
+from app.api.deps import get_db_session
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 

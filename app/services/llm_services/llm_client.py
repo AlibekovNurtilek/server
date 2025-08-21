@@ -5,8 +5,11 @@ import logging
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
 import httpx
-from app.db.models import Customer
+from app.db.models import Customer, MessageRole
 from app.services.llm_services.system_promt import get_system_prompt, get_faq_system_prompt, get_tool_response_system_prompt
+from app.services.message_service import MessageService
+from app.schemas.message import MessageCreate
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .function_processor import FunctionProcessor
 from .prompt_builder import PromptBuilder
@@ -21,6 +24,7 @@ class AitilLLMClient:
     - Builds messages with PromptBuilder
     - Streams SSE tokens
     - Processes function calls
+    - Saves messages to database
     """
 
     def __init__(
@@ -31,6 +35,7 @@ class AitilLLMClient:
         temperature: float = 0.5,
         default_language: str = "ky",
         request_timeout: Optional[float] = None,
+        db_session: Optional[AsyncSession] = None,
     ) -> None:
         self.llm_url = llm_url
         self.model = model
@@ -38,6 +43,49 @@ class AitilLLMClient:
         self.default_language = default_language
         self.request_timeout = request_timeout
         self.function_processor = FunctionProcessor()
+        self.db_session = db_session
+
+    async def _save_messages_to_db(
+        self, 
+        user_message: str, 
+        assistant_response: str, 
+        chat_id: int
+    ) -> None:
+        """
+        Save user message and assistant response to database.
+        
+        :param user_message: The user's message content
+        :param assistant_response: The assistant's response content
+        :param chat_id: The chat ID
+        """
+        if not self.db_session:
+            logger.warning("No database session provided, skipping message save")
+            return
+            
+        try:
+            message_service = MessageService(self.db_session)
+            
+            # Save user message
+            user_msg_data = MessageCreate(
+                chat_id=chat_id,
+                role=MessageRole.user,
+                content=user_message
+            )
+            await message_service.create_message(user_msg_data)
+            
+            # Save assistant response
+            assistant_msg_data = MessageCreate(
+                chat_id=chat_id,
+                role=MessageRole.assistant,
+                content=assistant_response
+            )
+            await message_service.create_message(assistant_msg_data)
+            
+            logger.info(f"Messages saved to database for chat_id: {chat_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to save messages to database: {e}")
+            # Don't raise the exception to avoid breaking the main flow
 
     async def astream_answer(
         self,
@@ -45,14 +93,16 @@ class AitilLLMClient:
         *,
         language: Optional[str] = None,
         user: Optional[Customer] = None,
+        chat_id: Optional[int] = None,
     ) -> AsyncGenerator[str, None]:
-        """Stream answer with function call processing."""
+        """Stream answer with function call processing and message saving."""
         lang = language or self.default_language
         payload = self._build_payload(
             message=message,
             language=lang,
             user=user,
             stream=True,
+            chat_id=chat_id,
         )
         
         # Collect initial response text for function analysis
@@ -68,14 +118,37 @@ class AitilLLMClient:
         restricted_func = self.function_processor.check_authorization_required(func_calls, user)
         if restricted_func:
             error_message = self.function_processor.get_error_message(lang)
+            
+            # Save messages to DB if user is authorized and chat_id exists
+            if user and chat_id:
+                try:
+                    chat_id_int = int(chat_id)
+                    await self._save_messages_to_db(message, error_message, chat_id_int)
+                except (ValueError, TypeError):
+                    logger.error(f"Invalid chat_id format: {chat_id}")
+            
             yield self.function_processor.format_sse_response(error_message)
             yield "data: [DONE]\n\n"
             return
 
         # If no function calls, stream the original response
         if not func_calls:
+            # Collect response chunks for saving
+            response_chunks: List[str] = []
+            
             for part in parts:
+                response_chunks.append(part)
                 yield self.function_processor.format_sse_response(part)
+            
+            # Save messages to DB if user is authorized and chat_id exists
+            if user and chat_id:
+                try:
+                    chat_id_int = int(chat_id)
+                    full_response = "".join(response_chunks)
+                    await self._save_messages_to_db(message, full_response, chat_id_int)
+                except (ValueError, TypeError):
+                    logger.error(f"Invalid chat_id format: {chat_id}")
+            
             yield "data: [DONE]\n\n"
             return
 
@@ -106,9 +179,32 @@ class AitilLLMClient:
         }
         logger.info("Final LLM request payload: %s", json.dumps(new_payload, ensure_ascii=False, indent=2))
         
-        # Stream the final response
+        # Stream the final response and collect chunks for saving
+        response_chunks: List[str] = []
+        
         async for chunk in self._sse_stream(new_payload):
+            # Extract content from SSE format for saving
+            if chunk.startswith("data: ") and chunk != "data: [DONE]\n\n":
+                try:
+                    data = chunk[len("data: "):].strip()
+                    if data and data != "[DONE]":
+                        obj = json.loads(data)
+                        content = obj.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                        if content:
+                            response_chunks.append(content)
+                except json.JSONDecodeError:
+                    pass
+            
             yield chunk
+        
+        # Save messages to DB if user is authorized and chat_id exists
+        if user and chat_id:
+            try:
+                chat_id_int = int(chat_id)
+                full_response = "".join(response_chunks)
+                await self._save_messages_to_db(message, full_response, chat_id_int)
+            except (ValueError, TypeError):
+                logger.error(f"Invalid chat_id format: {chat_id}")
 
     def _build_payload(
         self,
@@ -117,11 +213,12 @@ class AitilLLMClient:
         language: str,
         user: Optional[Customer],
         stream: bool,
+        chat_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Build request payload for LLM."""
         system_prompt = get_system_prompt(language)
         builder = PromptBuilder(system_prompt)
-        messages = builder.build(user_message=message, user=user)
+        messages = builder.build(user_message=message, user=user, chat_id=chat_id, db_session=self.db_session)
 
         payload = {
             "model": self.model,
@@ -178,12 +275,13 @@ class AitilLLMClient:
                         continue
 
 
-def build_llm_client() -> AitilLLMClient:
+def build_llm_client(db_session: Optional[AsyncSession] = None) -> AitilLLMClient:
     """Build and return LLM client instance."""
     return AitilLLMClient(
-        llm_url="https://chat.aitil.kg/suroo",
+        llm_url="https://chat.aitil.kg/mcp_suroo",
         model="aitil",
         temperature=0.5,
         default_language="ky",
         request_timeout=None,
+        db_session=db_session,
     )

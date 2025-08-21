@@ -2,6 +2,9 @@
 
 import logging
 from typing import Any, Dict, List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.services.message_service import MessageService
+
 
 from app.db.models import Customer
 
@@ -32,8 +35,10 @@ class PromptBuilder:
         *,
         user_message: str,
         user: Optional[Customer] = None,
-        conversation_history: Optional[List[Dict[str, Any]]] = None,  # intentionally unused
+        chat_id: Optional[int] = None,
+        db_session: Optional[AsyncSession] = None,
     ) -> List[Dict[str, Any]]:
+        message_service = MessageService(db_session) if db_session else None
         """Build messages list for LLM request."""
         messages: List[Dict[str, Any]] = []
         
