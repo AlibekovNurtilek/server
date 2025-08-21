@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session
 from app.services.message_service import MessageService
-from app.schemas.message import MessageCreate, MessageUpdate, Message
+from app.schemas.message import MessageCreate, MessageUpdate, MessageSchema
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
-@router.get("/", response_model=List[Message])
+@router.get("/", response_model=List[MessageSchema])
 async def get_all_messages(session: AsyncSession = Depends(get_db_session)):
     """
     Retrieve all messages.
@@ -19,7 +19,7 @@ async def get_all_messages(session: AsyncSession = Depends(get_db_session)):
     messages = await service.get_messages_by_chat_id(chat_id=None)  # Passing None to get all
     return messages
 
-@router.get("/{message_id}", response_model=Message)
+@router.get("/{message_id}", response_model=MessageSchema)
 async def get_message(message_id: int, session: AsyncSession = Depends(get_db_session)):
     """
     Retrieve a message by its ID.
@@ -32,7 +32,7 @@ async def get_message(message_id: int, session: AsyncSession = Depends(get_db_se
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-@router.get("/chat/{chat_id}", response_model=List[Message])
+@router.get("/chat/{chat_id}", response_model=List[MessageSchema])
 async def get_messages_by_chat(chat_id: int, session: AsyncSession = Depends(get_db_session)):
     """
     Retrieve all messages for a specific chat.
@@ -40,7 +40,7 @@ async def get_messages_by_chat(chat_id: int, session: AsyncSession = Depends(get
     service = MessageService(session)
     return await service.get_messages_by_chat_id(chat_id)
 
-@router.post("/", response_model=Message, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MessageSchema, status_code=status.HTTP_201_CREATED)
 async def create_message(message_data: MessageCreate, session: AsyncSession = Depends(get_db_session)):
     """
     Create a new message.
@@ -53,7 +53,7 @@ async def create_message(message_data: MessageCreate, session: AsyncSession = De
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-@router.put("/{message_id}", response_model=Message)
+@router.put("/{message_id}", response_model=MessageSchema)
 async def update_message(message_id: int, update_data: MessageUpdate, session: AsyncSession = Depends(get_db_session)):
     """
     Update an existing message.

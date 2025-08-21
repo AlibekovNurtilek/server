@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 
 from app.db.repositories.message_repository import MessageRepository
 from app.db.models import Message
-from app.schemas.message import MessageCreate, MessageUpdate, Message as MessageSchema
+from app.schemas.message import MessageCreate, MessageUpdate, MessageSchema as MessageSchema
 
 class MessageService:
     """

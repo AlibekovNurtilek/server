@@ -97,7 +97,7 @@ class AitilLLMClient:
     ) -> AsyncGenerator[str, None]:
         """Stream answer with function call processing and message saving."""
         lang = language or self.default_language
-        payload = self._build_payload(
+        payload = await self._build_payload(
             message=message,
             language=lang,
             user=user,
@@ -169,7 +169,7 @@ class AitilLLMClient:
 
         # Build final LLM request
         builder = PromptBuilder(new_system_prompt)
-        new_messages = builder.build(user_message=final_user_message, user=user)
+        new_messages = await builder.build(user_message=final_user_message, user=user)
         
         new_payload = {
             "model": self.model,
@@ -206,7 +206,7 @@ class AitilLLMClient:
             except (ValueError, TypeError):
                 logger.error(f"Invalid chat_id format: {chat_id}")
 
-    def _build_payload(
+    async def _build_payload(
         self,
         *,
         message: str,
@@ -218,7 +218,12 @@ class AitilLLMClient:
         """Build request payload for LLM."""
         system_prompt = get_system_prompt(language)
         builder = PromptBuilder(system_prompt)
-        messages = builder.build(user_message=message, user=user, chat_id=chat_id, db_session=self.db_session)
+        messages = await builder.build(
+            user_message=message, 
+            user=user, 
+            chat_id=chat_id, 
+            db_session=self.db_session
+        )
 
         payload = {
             "model": self.model,
