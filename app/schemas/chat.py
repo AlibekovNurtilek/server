@@ -19,7 +19,7 @@ class ChatUpdate(ChatBase):
 
 class Chat(ChatBase):
     id: int
-    customer_id: int  # Included in output for clarity, but not in create/update
+    customer_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 

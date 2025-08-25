@@ -90,28 +90,25 @@ class MessageRole(str, enum.Enum):
 # ========================
 
 class Customer(Base):
-
     __tablename__ = "customers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    middle_name: Mapped[Optional[str]] = mapped_column(String(100))  # Отчество
+    middle_name: Mapped[Optional[str]] = mapped_column(String(100))
     birth_date: Mapped[date]
     passport_number: Mapped[str] = mapped_column(String(50), unique=True)
     phone_number: Mapped[str] = mapped_column(String(20))
     email: Mapped[str] = mapped_column(String(255), unique=True)
-    address: Mapped[str] = mapped_column(Text)  # Полный адрес проживания/регистрации
-    password_hash: Mapped[str] = mapped_column(String(255))  # Хэш пароля (не хранить в открытом виде!)
-
+    address: Mapped[str] = mapped_column(Text)
+    password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Связи
     accounts: Mapped[List["Account"]] = relationship(back_populates="customer")
     loans: Mapped[List["Loan"]] = relationship(back_populates="customer")
-    chats: Mapped[List["Chat"]] = relationship(back_populates="customer")
-
+    # Убрали chats: Mapped[List["Chat"]]
 
 class Account(Base):
 
@@ -277,16 +274,16 @@ class Chat(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[Optional[str]] = mapped_column(String(255))
-    customer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("customers.id"))
-    agent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"))
+    customer_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Убрали ForeignKey
+    agent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     status: Mapped[ChatStatus] = mapped_column(Enum(ChatStatus), default=ChatStatus.open)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Связи
     messages: Mapped[List["Message"]] = relationship(back_populates="chat", cascade="all, delete-orphan")
-    customer: Mapped[Optional["Customer"]] = relationship(back_populates="chats")
     agent: Mapped[Optional["Employee"]] = relationship(back_populates="chats")
+    # Убрали связь customer: Mapped[Optional["Customer"]]
 
 
 class Message(Base):

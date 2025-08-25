@@ -120,7 +120,7 @@ class AitilLLMClient:
             error_message = self.function_processor.get_error_message(lang)
             
             # Save messages to DB if user is authorized and chat_id exists
-            if user and chat_id:
+            if chat_id:
                 try:
                     chat_id_int = int(chat_id)
                     await self._save_messages_to_db(message, error_message, chat_id_int)
@@ -141,7 +141,7 @@ class AitilLLMClient:
                 yield self.function_processor.format_sse_response(part)
             
             # Save messages to DB if user is authorized and chat_id exists
-            if user and chat_id:
+            if chat_id:
                 try:
                     chat_id_int = int(chat_id)
                     full_response = "".join(response_chunks)
@@ -198,7 +198,7 @@ class AitilLLMClient:
             yield chunk
         
         # Save messages to DB if user is authorized and chat_id exists
-        if user and chat_id:
+        if chat_id:
             try:
                 chat_id_int = int(chat_id)
                 full_response = "".join(response_chunks)

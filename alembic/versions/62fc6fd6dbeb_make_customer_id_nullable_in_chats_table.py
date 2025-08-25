@@ -1,8 +1,8 @@
-"""init schema
+"""Make customer_id nullable in chats table
 
-Revision ID: 8b76de97fdbe
+Revision ID: 62fc6fd6dbeb
 Revises: 
-Create Date: 2025-08-16 09:17:06.760149
+Create Date: 2025-08-25 19:21:44.060403
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8b76de97fdbe'
+revision: str = '62fc6fd6dbeb'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -70,7 +70,6 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['agent_id'], ['employees.id'], ),
-    sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('loans',

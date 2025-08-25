@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_customer, get_db_session
+from app.api.deps import get_current_customer, get_db_session, get_optional_customer
 from app.services.chat_service import ChatService
 from app.schemas.chat import ChatCreate, ChatUpdate, Chat
 from app.db.models import Customer
@@ -67,7 +67,7 @@ async def get_chats_by_customer(
 @router.post("/", response_model=Chat, status_code=status.HTTP_201_CREATED)
 async def create_chat(
     chat_data: ChatCreate,
-    current_user: Customer = Depends(get_current_customer),
+    current_user: Customer = Depends(get_optional_customer),
     session: AsyncSession = Depends(get_db_session)
 ):
     """

@@ -317,8 +317,8 @@ async def seed_data(session: AsyncSession) -> None:
     # Чат + сообщения (Customer 1)
     c1_chat = Chat(
         title="Вопрос по карте",
-        customer=c1,
-        agent=emp1,
+        customer_id=c1.id,  # Используем customer_id вместо customer
+        agent_id=emp1.id,
         status=ChatStatus.open,
         created_at=now - timedelta(days=5)
     )
@@ -382,10 +382,11 @@ async def seed_data(session: AsyncSession) -> None:
         status=PaymentStatus.completed,
     )
 
+    # Чат + сообщения (Customer 2)
     c2_chat = Chat(
         title="Подтверждение перевода",
-        customer=c2,
-        agent=emp2,
+        customer_id=c2.id,  # Используем customer_id вместо customer
+        agent_id=emp2.id,
         status=ChatStatus.closed,
         created_at=now - timedelta(days=15),
         updated_at=now - timedelta(days=14),

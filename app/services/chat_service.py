@@ -1,12 +1,17 @@
 # app/services/chat_service.py
 
-from typing import List
+import uuid
+import logging
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
 from app.db.repositories.chat_repository import ChatRepository
 from app.db.models import Chat, Customer
 from app.schemas.chat import ChatCreate, ChatUpdate, Chat as ChatSchema
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class ChatService:
     """
@@ -19,24 +24,20 @@ class ChatService:
         self.session = session
         self.repo = ChatRepository(session)
 
-    async def create_chat(self, chat_data: ChatCreate, customer: Customer) -> ChatSchema:
-        """
-        Create a new chat for the authenticated customer.
-
-        :param chat_data: Input data for creating a chat.
-        :param customer: The authenticated Customer object.
-        :return: The created chat as a schema.
-        """
-        chat = Chat(
-            title=chat_data.title,
-            customer_id=customer.id,  # Use customer ID from authenticated user
-            agent_id=chat_data.agent_id,
-            status=chat_data.status
-        )
-        created_chat = await self.repo.add(chat)
-        await self.session.commit()
-        await self.session.refresh(created_chat)
-        return ChatSchema.model_validate(created_chat)
+    async def create_chat(self, chat_data: ChatCreate, customer: Optional[Customer] = None) -> ChatSchema:
+        try:
+            chat = Chat(
+                title=chat_data.title,
+                customer_id=customer.id if customer else None,  # Проверка на None
+                agent_id=chat_data.agent_id,
+                status=chat_data.status
+            )
+            created_chat = await self.repo.add(chat)
+            await self.session.commit()
+            await self.session.refresh(created_chat)
+            return ChatSchema.model_validate(created_chat)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create chat: {str(e)}")
 
     async def get_chat_by_id(self, chat_id: int) -> ChatSchema:
         """
