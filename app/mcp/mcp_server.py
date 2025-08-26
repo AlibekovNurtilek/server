@@ -184,11 +184,12 @@ async def get_largest_transaction_tool(customer_id: int, lang: str = "ky"):
 
 @server.tool(
     name="list_all_card_names",
-    description="DemirBank'тагы бардык карталардын тизмесин кайтарат"
+    description="Ai Bank'тагы бардык карталардын тизмесин кайтарат"
 )
 async def list_all_card_names_tool(lang: str = "ky"):
     result = list_all_card_names(lang=lang)
-    return "".join(f"{'Карта аты' if lang == 'ky' else 'Название карты'}: {card['name']}\n" for card in result)
+    header = "Ai Bank'тагы жеткиликтүү карталардын тизмеси\n" if lang == "ky" else "Список всех доступных карт Ai Bank\n"
+    return header + "".join(f"{'Карта аты' if lang == 'ky' else 'Название карты'}: {card['name']}\n" for card in result)
 
 
 @server.tool(
@@ -453,7 +454,7 @@ async def get_contact_info_tool(lang: str = "ky"):
 )
 async def get_complete_about_us_tool(lang: str = "ky"):
     data = get_complete_about_us(lang=lang)
-    lines = [f"{'🏦 ' + data.get('bank_name', 'DemirBank') if lang == 'ky' else '🏦 ' + data.get('bank_name', 'DemirBank')}\n"]
+    lines = [f"{'🏦 ' + data.get('bank_name', 'Ai Bank') if lang == 'ky' else '🏦 ' + data.get('bank_name', 'Ai Bank')}\n"]
     lines.append(f"\n{'🎯 Миссия' if lang == 'ky' else '🎯 Миссия'}:\n" + data.get('mission', '') + "\n")
     values = data.get('values', [])
     if values:
@@ -514,7 +515,7 @@ async def get_about_us_section_tool(section: str, lang: str = "ky"):
 
 @server.tool(
     name="list_all_deposit_names",
-    description="DemirBank'тагы бардык депозиттердин тизмесин кайтарат"
+    description="Ai Bank'тагы бардык депозиттердин тизмесин кайтарат"
 )
 async def list_all_deposit_names_tool(lang: str = "ky"):
     deposits = list_all_deposit_names(lang=lang)
