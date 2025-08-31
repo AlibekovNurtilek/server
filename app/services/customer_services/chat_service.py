@@ -8,7 +8,7 @@ from fastapi import HTTPException, status
 
 from app.db.repositories.chat_repository import ChatRepository
 from app.db.models import Chat, Customer
-from app.schemas.chat import ChatCreate, ChatUpdate, Chat as ChatSchema
+from app.schemas.chat_schemas import ChatCreate, ChatUpdate, Chat as ChatSchema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

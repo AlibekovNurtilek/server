@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_optional_customer
-from app.schemas.conversation import ConversationRequest
+from app.schemas.conversation_schemas import ConversationRequest
 from app.services.llm_services.llm_client import build_llm_client
 from app.db.models import Customer
 from app.api.deps import get_db_session

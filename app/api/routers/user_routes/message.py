@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session
 from app.services.customer_services.message_service import MessageService
-from app.schemas.message import MessageCreate, MessageUpdate, MessageSchema
+from app.schemas.message_schemas import MessageCreate, MessageUpdate, MessageSchema
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 

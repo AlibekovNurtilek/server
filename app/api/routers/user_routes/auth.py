@@ -3,7 +3,7 @@ from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_current_customer, SESSION_KEY
-from app.schemas.auth import RegisterRequest, LoginRequest, CustomerOut
+from app.schemas.auth_schemas import RegisterRequest, LoginRequest, CustomerOut
 from app.services.customer_services.auth_service import AuthService
 
 router = APIRouter(prefix="/api", tags=["auth"])

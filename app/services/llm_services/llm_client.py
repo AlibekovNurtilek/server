@@ -8,7 +8,7 @@ import httpx
 from app.db.models import Customer, MessageRole
 from app.services.llm_services.system_promt import get_system_prompt, get_faq_system_prompt, get_tool_response_system_prompt
 from app.services.customer_services.message_service import MessageService
-from app.schemas.message import MessageCreate
+from app.schemas.message_schemas import MessageCreate
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .function_processor import FunctionProcessor

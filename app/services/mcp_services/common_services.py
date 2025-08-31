@@ -255,7 +255,7 @@ def load_about_us_data(lang: str = "ky") -> Dict[str, Any]:
     try:
         with open(KNOWLEDGE_BASE_DIR.joinpath(lang, ABOUT_US_FILENAME), encoding='utf-8') as f:
             about_us_json = json.load(f)
-            return about_us_json.get('about-us', {})
+            return about_us_json.get('about_us', {})
     except Exception as e:
         logging.exception(f"Error loading about us data: {e}")
         return {}
