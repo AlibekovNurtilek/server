@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Request, HTTPException, status, Query
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
@@ -8,7 +8,9 @@ from app.schemas.auth_schemas import EmplyeeLoginRequest, EmplyeeOut
 from app.services.admin_services.auth_service import AuthService
 from app.services.customer_services.customer_service import CustomerService
 from app.schemas.customer_schemas import CustomerRead, CustomerReadWithRelations
+from app.services.admin_services.employee_service import EmployeeService
 from app.db.models import EmployeeRole, Employee
+from app.schemas.employee_schemas import EmployeeRead, EmployeeCreate
 
 router = APIRouter(prefix="/api/admin", tags=["admin_part"])
 
@@ -92,4 +94,85 @@ async def get_customer_by_id(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve customer: {str(e)}"
+        )
+
+
+@router.get("/employees", response_model=List[EmployeeRead])
+async def get_all_employees(
+    limit: int = 10,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Получить всех сотрудников с пагинацией.
+    Доступно только для ролей admin или manager.
+    """
+    if current_employee.role not in [EmployeeRole.admin]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Доступ ограничен"
+        )
+    try:
+        service = EmployeeService(session)
+        return await service.get_all_employees(limit=limit, offset=offset)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Не удалось получить сотрудников: {str(e)}"
+        )
+
+
+@router.delete("/employees/{employee_id}", status_code=204)
+async def delete_employee(
+    employee_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Удалить сотрудника по его ID.
+    Доступно только для ролей admin или manager.
+    """
+    if current_employee.role not in [EmployeeRole.admin]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Доступ ограничен"
+        )
+    try:
+        service = EmployeeService(session)
+        await service.delete(employee_id)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Не удалось удалить сотрудника: {str(e)}"
+        )
+
+@router.post("/employees", response_model=EmployeeRead, status_code=201)
+async def create_employee(
+    payload: EmployeeCreate,
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Создать нового сотрудника.
+    Доступно только для ролей admin или manager.
+    """
+    if current_employee.role not in [EmployeeRole.admin]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Доступ ограничен"
+        )
+    try:
+        service = EmployeeService(session)
+        return await service.create(employee_data=payload)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Не удалось создать сотрудника: {str(e)}"
         )

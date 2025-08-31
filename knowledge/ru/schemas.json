@@ -1,0 +1,719 @@
+{
+  "get_balance": {
+    "name": "get_balance",
+    "description": "Получить общий баланс пользователя."
+  },
+  "get_transactions": {
+    "name": "get_transactions",
+    "description": "Получить список последних транзакций пользователя (до 5).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "description": "Максимальное количество транзакций (по умолчанию 5)"
+        }
+      },
+      "required": []
+    }
+  },
+  "transfer_money": {
+    "name": "transfer_money",
+    "description": "Перевести деньги другому пользователю по номеру счёта.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "to_account_number": {
+          "type": "string",
+          "description": "Счет получателя"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Сумма перевода"
+        }
+      },
+      "required": [
+        "to_account_number"
+      ]
+    }
+  },
+  "get_last_incoming_transaction": {
+    "name": "get_last_incoming_transaction",
+    "description": "Получить информацию о последней входящей транзакции (кто перевёл деньги и сколько)."
+  },
+  "get_accounts_info": {
+    "name": "get_accounts_info",
+    "description": "Список всех счетов пользователя и их баланс."
+  },
+  "get_incoming_sum_for_period": {
+    "name": "get_incoming_sum_for_period",
+    "description": "Общая сумма входящих переводов за указанный период.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "description": "Дата начала (YYYY-MM-DD)"
+        },
+        "end_date": {
+          "type": "string",
+          "description": "Дата окончания (YYYY-MM-DD)"
+        }
+      },
+      "required": [
+        "start_date",
+        "end_date"
+      ]
+    }
+  },
+  "get_outgoing_sum_for_period": {
+    "name": "get_outgoing_sum_for_period",
+    "description": "Общая сумма исходящих переводов за указанный период.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "description": "Дата начала (YYYY-MM-DD)"
+        },
+        "end_date": {
+          "type": "string",
+          "description": "Дата окончания (YYYY-MM-DD)"
+        }
+      },
+      "required": [
+        "start_date",
+        "end_date"
+      ]
+    }
+  },
+  "get_last_3_transfer_recipients": {
+    "name": "get_last_3_transfer_recipients",
+    "description": "Список получателей последних 3 переводов."
+  },
+  "get_largest_transaction": {
+    "name": "get_largest_transaction",
+    "description": "Самая крупная транзакция (по сумме) и её направление."
+  },
+  "list_all_card_names": {
+    "name": "list_all_card_names",
+    "description": "Возвращает список всех карт."
+  },
+  "get_card_details": {
+    "name": "get_card_details",
+    "description": "Возвращает основную информацию о карте по её названию (например, валюта, срок действия, расходы, лимиты, описание).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "Название карты",
+          "enum": [
+            "Visa Classic Debit",
+            "Visa Gold Debit",
+            "Visa Platinum Debit",
+            "Mastercard Standard Debit",
+            "Mastercard Gold Debit",
+            "Mastercard Platinum Debit",
+            "Card Plus",
+            "Virtual Card",
+            "Visa Classic Credit",
+            "Visa Gold Credit",
+            "Visa Platinum Credit",
+            "Mastercard Standard Credit",
+            "Mastercard Gold Credit",
+            "Mastercard Platinum Credit",
+            "Elkart",
+            "Visa Campus Card"
+          ]
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "compare_cards": {
+    "name": "compare_cards",
+    "description": "Сравнивает карты по основным параметрам. В аргумент передаётся список названий карт.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Visa Classic Debit",
+              "Visa Gold Debit",
+              "Visa Platinum Debit",
+              "Mastercard Standard Debit",
+              "Mastercard Gold Debit",
+              "Mastercard Platinum Debit",
+              "Card Plus",
+              "Virtual Card",
+              "Visa Classic Credit",
+              "Visa Gold Credit",
+              "Visa Platinum Credit",
+              "Mastercard Standard Credit",
+              "Mastercard Gold Credit",
+              "Mastercard Platinum Credit",
+              "Elkart",
+              "Visa Campus Card"
+            ]
+          },
+          "description": "Список названий карт (2–4 карты)"
+        }
+      },
+      "required": [
+        "card_names"
+      ]
+    }
+  },
+  "get_card_limits": {
+    "name": "get_card_limits",
+    "description": "Возвращает лимиты по карте (ATM, POS, бесконтактные и др.).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "Название карты",
+          "enum": [
+            "Visa Classic Debit",
+            "Visa Gold Debit",
+            "Visa Platinum Debit",
+            "Mastercard Standard Debit",
+            "Mastercard Gold Debit",
+            "Mastercard Platinum Debit",
+            "Card Plus",
+            "Virtual Card",
+            "Visa Classic Credit",
+            "Visa Gold Credit",
+            "Visa Platinum Credit",
+            "Mastercard Standard Credit",
+            "Mastercard Gold Credit",
+            "Mastercard Platinum Credit",
+            "Elkart",
+            "Visa Campus Card"
+          ]
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "get_card_benefits": {
+    "name": "get_card_benefits",
+    "description": "Возвращает преимущества и особенности карты по её названию.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "Название карты",
+          "enum": [
+            "Visa Classic Debit",
+            "Visa Gold Debit",
+            "Visa Platinum Debit",
+            "Mastercard Standard Debit",
+            "Mastercard Gold Debit",
+            "Mastercard Platinum Debit",
+            "Card Plus",
+            "Virtual Card",
+            "Visa Classic Credit",
+            "Visa Gold Credit",
+            "Visa Platinum Credit",
+            "Mastercard Standard Credit",
+            "Mastercard Gold Credit",
+            "Mastercard Platinum Credit",
+            "Elkart",
+            "Visa Campus Card"
+          ]
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "get_cards_by_type": {
+    "name": "get_cards_by_type",
+    "description": "Фильтрует карты по типу (дебетовая/кредитная).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_type": {
+          "type": "string",
+          "description": "Тип карты",
+          "enum": [
+            "debit",
+            "credit"
+          ]
+        }
+      },
+      "required": [
+        "card_type"
+      ]
+    }
+  },
+  "get_cards_by_payment_system": {
+    "name": "get_cards_by_payment_system",
+    "description": "Фильтрует карты по платёжной системе (Visa/Mastercard).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Платёжная система",
+          "enum": [
+            "visa",
+            "mastercard"
+          ]
+        }
+      },
+      "required": [
+        "system"
+      ]
+    }
+  },
+  "get_cards_by_fee_range": {
+    "name": "get_cards_by_fee_range",
+    "description": "Фильтрует карты по диапазону годового обслуживания.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "min_fee": {
+          "type": "string",
+          "description": "Минимальное годовое обслуживание (сом)"
+        },
+        "max_fee": {
+          "type": "string",
+          "description": "Максимальное годовое обслуживание (сом)"
+        }
+      },
+      "required": []
+    }
+  },
+  "get_cards_by_currency": {
+    "name": "get_cards_by_currency",
+    "description": "Фильтрует карты по валюте (KGS, USD, EUR).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "description": "Валюта",
+          "enum": [
+            "KGS",
+            "USD",
+            "EUR"
+          ]
+        }
+      },
+      "required": [
+        "currency"
+      ]
+    }
+  },
+  "get_card_instructions": {
+    "name": "get_card_instructions",
+    "description": "Возвращает инструкции по использованию карты (Card Plus, Virtual Card).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "Название карты",
+          "enum": [
+            "Card Plus",
+            "Virtual Card"
+          ]
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "get_card_conditions": {
+    "name": "get_card_conditions",
+    "description": "Возвращает условия и требования по карте (для Elkart).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "Название карты",
+          "enum": [
+            "Elkart"
+          ]
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "get_cards_with_features": {
+    "name": "get_cards_with_features",
+    "description": "Находит карты с определёнными характеристиками.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Список характеристик"
+        }
+      },
+      "required": [
+        "features"
+      ]
+    }
+  },
+  "get_card_recommendations": {
+    "name": "get_card_recommendations",
+    "description": "Возвращает рекомендации по картам в зависимости от критериев.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "type": "object",
+          "description": "Критерии выбора карты",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Тип карты (debit/credit)",
+              "enum": [
+                "debit",
+                "credit"
+              ]
+            },
+            "max_fee": {
+              "type": "integer",
+              "description": "Максимальное годовое обслуживание (сом)"
+            },
+            "currency": {
+              "type": "string",
+              "description": "Валюта",
+              "enum": [
+                "KGS",
+                "USD",
+                "EUR"
+              ]
+            },
+            "features": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Необходимые характеристики"
+            }
+          }
+        }
+      },
+      "required": [
+        "criteria"
+      ]
+    }
+  },
+  "get_bank_info": {
+    "name": "get_bank_info",
+    "description": "Возвращает основную информацию о банке (название, год основания, лицензия)."
+  },
+  "get_bank_mission": {
+    "name": "get_bank_mission",
+    "description": "Возвращает миссию и историю банка."
+  },
+  "get_bank_values": {
+    "name": "get_bank_values",
+    "description": "Возвращает ценности и принципы банка."
+  },
+  "get_ownership_info": {
+    "name": "get_ownership_info",
+    "description": "Возвращает информацию о владельцах банка."
+  },
+  "get_branch_network": {
+    "name": "get_branch_network",
+    "description": "Возвращает информацию о филиальной сети банка."
+  },
+  "get_contact_info": {
+    "name": "get_contact_info",
+    "description": "Возвращает контактную информацию банка."
+  },
+  "get_complete_about_us": {
+    "name": "get_complete_about_us",
+    "description": "Возвращает полную информацию о банке."
+  },
+  "get_about_us_section": {
+    "name": "get_about_us_section",
+    "description": "Возвращает определённый раздел информации о банке.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "description": "Раздел информации",
+          "enum": [
+            "bank_name",
+            "founded",
+            "license",
+            "mission",
+            "values",
+            "ownership",
+            "branches",
+            "contact",
+            "descr"
+          ]
+        }
+      },
+      "required": [
+        "section"
+      ]
+    }
+  },
+  "list_all_deposit_names": {
+    "name": "list_all_deposit_names",
+    "description": "Возвращает список всех депозитов"
+  },
+  "get_deposit_details": {
+    "name": "get_deposit_details",
+    "description": "Возвращает основную информацию о депозите по его названию",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "deposit_name": {
+          "type": "string",
+          "description": "Название депозита",
+          "enum": [
+            "Demand Deposit",
+            "Classic Term Deposit",
+            "Replenishable Deposit",
+            "Standard Term Deposit",
+            "Online Deposit",
+            "Child Deposit",
+            "Government Treasury Bills",
+            "NBKR Notes"
+          ]
+        }
+      },
+      "required": [
+        "deposit_name"
+      ]
+    }
+  },
+  "compare_deposits": {
+    "name": "compare_deposits",
+    "description": "Сравнивает депозиты по основным параметрам.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "deposit_names": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Demand Deposit",
+              "Classic Term Deposit",
+              "Replenishable Deposit",
+              "Standard Term Deposit",
+              "Online Deposit",
+              "Child Deposit",
+              "Government Treasury Bills",
+              "NBKR Notes"
+            ]
+          },
+          "description": "Названия депозитов для сравнения"
+        }
+      },
+      "required": [
+        "deposit_names"
+      ]
+    }
+  },
+  "get_deposits_by_currency": {
+    "name": "get_deposits_by_currency",
+    "description": "Фильтрует депозиты по валюте (KGS, USD, EUR, RUB).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "description": "Код валюты",
+          "enum": [
+            "KGS",
+            "USD",
+            "EUR",
+            "RUB"
+          ]
+        }
+      },
+      "required": [
+        "currency"
+      ]
+    }
+  },
+  "get_deposits_by_term_range": {
+    "name": "get_deposits_by_term_range",
+    "description": "Фильтрует депозиты по диапазону сроков.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "min_term": {
+          "type": "string",
+          "description": "Минимальный срок"
+        },
+        "max_term": {
+          "type": "string",
+          "description": "Максимальный срок"
+        }
+      },
+      "required": []
+    }
+  },
+  "get_deposits_by_min_amount": {
+    "name": "get_deposits_by_min_amount",
+    "description": "Фильтрует депозиты по минимальной сумме.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "max_amount": {
+          "type": "string",
+          "description": "Максимальная минимальная сумма"
+        }
+      },
+      "required": [
+        "max_amount"
+      ]
+    }
+  },
+  "get_deposits_by_rate_range": {
+    "name": "get_deposits_by_rate_range",
+    "description": "Фильтрует депозиты по диапазону процентных ставок.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "min_rate": {
+          "type": "string",
+          "description": "Минимальная процентная ставка"
+        },
+        "max_rate": {
+          "type": "string",
+          "description": "Максимальная процентная ставка"
+        }
+      },
+      "required": []
+    }
+  },
+  "get_deposits_with_replenishment": {
+    "name": "get_deposits_with_replenishment",
+    "description": "Возвращает депозиты с возможностью пополнения."
+  },
+  "get_deposits_with_capitalization": {
+    "name": "get_deposits_with_capitalization",
+    "description": "Возвращает депозиты с возможностью капитализации."
+  },
+  "get_deposits_by_withdrawal_type": {
+    "name": "get_deposits_by_withdrawal_type",
+    "description": "Фильтрует депозиты по типу снятия.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "withdrawal_type": {
+          "type": "string",
+          "description": "Тип снятия"
+        }
+      },
+      "required": [
+        "withdrawal_type"
+      ]
+    }
+  },
+  "get_deposit_recommendations": {
+    "name": "get_deposit_recommendations",
+    "description": "Возвращает рекомендации по депозитам в зависимости от критериев.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "type": "object",
+          "description": "Критерии рекомендаций",
+          "properties": {
+            "currency": {
+              "type": "string",
+              "description": "Валюта"
+            },
+            "min_amount": {
+              "type": "string",
+              "description": "Минимальная сумма"
+            },
+            "term": {
+              "type": "string",
+              "description": "Срок"
+            },
+            "rate_preference": {
+              "type": "string",
+              "description": "Предпочтительная процентная ставка"
+            },
+            "replenishment_needed": {
+              "type": "boolean",
+              "description": "Нужно ли пополнение"
+            },
+            "capitalization_needed": {
+              "type": "boolean",
+              "description": "Нужна ли капитализация"
+            }
+          }
+        }
+      },
+      "required": [
+        "criteria"
+      ]
+    }
+  },
+  "get_government_securities": {
+    "name": "get_government_securities",
+    "description": "Возвращает государственные ценные бумаги (Treasury Bills, NBKR Notes)."
+  },
+  "get_child_deposits": {
+    "name": "get_child_deposits",
+    "description": "Возвращает специальные депозиты для детей."
+  },
+  "get_online_deposits": {
+    "name": "get_online_deposits",
+    "description": "Возвращает депозиты, которые можно открыть онлайн."
+  },
+  "get_faq_by_category": {
+    "name": "get_faq_by_category",
+    "description": "Этот инструмент используется для поиска ответов в базе FAQ (Часто задаваемые вопросы). Ответы основываются только на данных FAQ, без изменений текста и добавления новых сведений. Если ответа на вопрос нет, возвращается 'На этот вопрос нет ответа в базе FAQ.'. Язык ответа определяется параметром 'language'. Категории и их описание: \n- **cards**: банковские карты (оформление, утеря, блокировка, интернет-платежи, кредитный лимит, безопасность).\n- **loans**: кредиты и займы (документы, сумма, срок, способы оплаты, досрочное погашение).\n- **internet_banking**: интернет- и мобильный банкинг (регистрация, вход, восстановление пароля, платежи, QR Pay, безопасность).\n- **deposits**: депозиты (открытие счёта, процентные ставки, досрочное закрытие, страхование).\n- **taxes_fines**: налоги и штрафы (онлайн-оплата, проверка, льготный период).\n- **other**: прочие вопросы (часы работы филиалов, переводы, контакты, сейфовые ячейки).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "Категория FAQ. Для поиска ответа используются только вопросы-ответы этой категории.",
+          "enum": [
+            "cards",
+            "loans",
+            "internet_banking",
+            "deposits",
+            "taxes_fines",
+            "other"
+          ]
+        },
+        "question": {
+          "type": "string",
+          "description": "Вопрос, заданный пользователем. Сравнивается с вопросами в FAQ, и возвращается наиболее похожий ответ."
+        }
+      },
+      "required": [
+        "category",
+        "question"
+      ]
+    }
+  }
+}
