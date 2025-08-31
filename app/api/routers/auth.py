@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_current_customer, SESSION_KEY
 from app.schemas.auth import RegisterRequest, LoginRequest, CustomerOut
-from app.services.auth import AuthService
+from app.services.customer_services.auth_service import AuthService
 
 router = APIRouter(prefix="/api", tags=["auth"])
 
@@ -33,3 +33,5 @@ async def logout(request: Request):
 @router.get("/user", response_model=CustomerOut)
 async def get_me(current=Depends(get_current_customer)):
     return CustomerOut.model_validate(current)
+
+

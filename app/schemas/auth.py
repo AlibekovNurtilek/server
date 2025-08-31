@@ -19,3 +19,17 @@ class CustomerOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+#=======Employee==========
+
+class EmplyeeLoginRequest(BaseModel):
+    username: str
+    password: str
+
+class EmplyeeOut(BaseModel):
+    id: int
+    username: str
+    role: str
+    class Config:
+        from_attributes = True

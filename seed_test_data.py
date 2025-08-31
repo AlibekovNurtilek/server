@@ -27,8 +27,8 @@ async def seed_data(session: AsyncSession) -> None:
     now = datetime.utcnow()
 
     # --- Сотрудники (агенты) ---
-    emp1 = Employee(username="agent_anna", password_hash=hash_password("1234"), role=EmployeeRole.manager)
-    emp2 = Employee(username="agent_bek", password_hash=hash_password("1234"), role=EmployeeRole.support)
+    emp1 = Employee(username="admin", password_hash=hash_password("ashjeysinbidosum"), role=EmployeeRole.admin)
+    emp2 = Employee(username="tilek", password_hash=hash_password("1234"), role=EmployeeRole.manager)
     session.add_all([emp1, emp2])
     await session.flush()  # чтобы появились id у сотрудников
 

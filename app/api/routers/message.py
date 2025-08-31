@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session
-from app.services.message_service import MessageService
+from app.services.customer_services.message_service import MessageService
 from app.schemas.message import MessageCreate, MessageUpdate, MessageSchema
 
 router = APIRouter(prefix="/messages", tags=["messages"])

@@ -71,8 +71,6 @@ class EmployeeRole(str, enum.Enum):
     """Роль сотрудника в системе"""
     admin = "admin"           # администратор
     manager = "manager"       # менеджер
-    support = "support"       # поддержка
-    auditor = "auditor"       # аудит
 
 class ChatStatus(str, enum.Enum):
     open = "open"         # Чат активен
@@ -257,7 +255,7 @@ class Employee(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))  # Хэш пароля (не хранить в открытом виде!)
-    role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), default=EmployeeRole.support)
+    role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), default=EmployeeRole.manager)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

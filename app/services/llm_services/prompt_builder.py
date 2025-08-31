@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.message_service import MessageService
+from app.services.customer_services.message_service import MessageService
 from app.db.models import Customer, MessageRole
 
 logger = logging.getLogger(__name__)
