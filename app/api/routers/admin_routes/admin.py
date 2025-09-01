@@ -71,8 +71,14 @@ async def get_all_customers(
 async def get_customer_by_id(
     customer_id: int,
     include: Optional[str] = None,  # e.g., "accounts,cards,transactions,loans"
-    relations_limit: int = 10,
-    relations_offset: int = 0,
+    accounts_page: int = Query(1, ge=1),
+    accounts_page_size: int = Query(10, ge=1),
+    cards_page: int = Query(1, ge=1),
+    cards_page_size: int = Query(10, ge=1),
+    transactions_page: int = Query(1, ge=1),
+    transactions_page_size: int = Query(10, ge=1),
+    loans_page: int = Query(1, ge=1),
+    loans_page_size: int = Query(10, ge=1),
     session: AsyncSession = Depends(get_db_session),
     current_employee: Employee = Depends(get_current_employee),
 ):
@@ -88,12 +94,58 @@ async def get_customer_by_id(
     try:
         service = CustomerService(session)
         include_list = include.split(",") if include else []
-        return await service.get_customer_by_id(
+        result = await service.get_customer_by_id(
             customer_id=customer_id,
             include=include_list,
-            relations_limit=relations_limit,
-            relations_offset=relations_offset,
+            accounts_page=accounts_page,
+            accounts_page_size=accounts_page_size,
+            cards_page=cards_page,
+            cards_page_size=cards_page_size,
+            transactions_page=transactions_page,
+            transactions_page_size=transactions_page_size,
+            loans_page=loans_page,
+            loans_page_size=loans_page_size,
         )
+
+        # Формируем ответ в маршруте
+        customer_data = {
+            "id": result["customer"].id,
+            "first_name": result["customer"].first_name,
+            "last_name": result["customer"].last_name,
+            "middle_name": result["customer"].middle_name,
+            "birth_date": result["customer"].birth_date,
+            "passport_number": result["customer"].passport_number,
+            "phone_number": result["customer"].phone_number,
+            "email": result["customer"].email,
+            "address": result["customer"].address,
+            "created_at": result["customer"].created_at,
+            "updated_at": result["customer"].updated_at,
+            "accounts": {
+                "items": result["accounts"]["items"],
+                "page": accounts_page,
+                "page_size": accounts_page_size,
+                "total": result["accounts"]["total"]
+            },
+            "cards": {
+                "items": result["cards"]["items"],
+                "page": cards_page,
+                "page_size": cards_page_size,
+                "total": result["cards"]["total"]
+            },
+            "transactions": {
+                "items": result["transactions"]["items"],
+                "page": transactions_page,
+                "page_size": transactions_page_size,
+                "total": result["transactions"]["total"]
+            },
+            "loans": {
+                "items": result["loans"]["items"],
+                "page": loans_page,
+                "page_size": loans_page_size,
+                "total": result["loans"]["total"]
+            }
+        }
+        return customer_data
     except HTTPException as e:
         raise e
     except Exception as e:

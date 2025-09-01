@@ -56,17 +56,29 @@ class CustomerService:
         self,
         customer_id: int,
         include: Optional[List[str]] = None,
-        relations_limit: int = 10,
-        relations_offset: int = 0,
-    ) -> CustomerReadWithRelations:
+        accounts_page: int = 1,
+        accounts_page_size: int = 10,
+        cards_page: int = 1,
+        cards_page_size: int = 10,
+        transactions_page: int = 1,
+        transactions_page_size: int = 10,
+        loans_page: int = 1,
+        loans_page_size: int = 10,
+    ) -> Dict:
         """
         Retrieve a customer by ID with optional related data (accounts, cards, transactions, loans).
 
         :param customer_id: The ID of the customer.
         :param include: List of relations to include (e.g., ["accounts", "cards", "transactions", "loans"]).
-        :param relations_limit: Number of related records to return per relation.
-        :param relations_offset: Number of related records to skip per relation.
-        :return: Customer with related data as a schema.
+        :param accounts_page: Page number for accounts pagination.
+        :param accounts_page_size: Number of accounts per page.
+        :param cards_page: Page number for cards pagination.
+        :param cards_page_size: Number of cards per page.
+        :param transactions_page: Page number for transactions pagination.
+        :param transactions_page_size: Number of transactions per page.
+        :param loans_page: Page number for loans pagination.
+        :param loans_page_size: Number of loans per page.
+        :return: Dictionary with customer and related data.
         :raises HTTPException: If customer not found or error occurs.
         """
         try:
@@ -77,51 +89,48 @@ class CustomerService:
                     detail="Customer not found"
                 )
 
-            # Prepare response data
-            customer_data = {
-                "id": customer.id,
-                "first_name": customer.first_name,
-                "last_name": customer.last_name,
-                "middle_name": customer.middle_name,
-                "birth_date": customer.birth_date,
-                "passport_number": customer.passport_number,
-                "phone_number": customer.phone_number,
-                "email": customer.email,
-                "address": customer.address,
-                "created_at": customer.created_at,
-                "updated_at": customer.updated_at,
-                # Exclude password_hash for security
+            # Преобразуем клиента в Pydantic-схему
+            customer_data = CustomerRead.model_validate(customer)
+
+            # Инициализируем словарь для ответа
+            result = {
+                "customer": customer_data,
+                "accounts": {"items": [], "total": 0},
+                "cards": {"items": [], "total": 0},
+                "transactions": {"items": [], "total": 0},
+                "loans": {"items": [], "total": 0},
             }
 
-            # Handle relations if specified
+            # Обрабатываем отношения, если они указаны
             include = include or []
             if include:
                 if "accounts" in include:
-                    accounts = await self.repo.get_accounts_by_customer_id(
-                        customer_id, limit=relations_limit, offset=relations_offset
+                    accounts, accounts_total = await self.repo.get_accounts_by_customer_id(
+                        customer_id, page=accounts_page, page_size=accounts_page_size
                     )
-                    customer_data["accounts"] = [
-                        AccountRead.model_validate(a) for a in accounts
-                    ]
-                else:
-                    customer_data["accounts"] = []
+                    result["accounts"] = {
+                        "items": [AccountRead.model_validate(a) for a in accounts],
+                        "total": accounts_total
+                    }
 
                 if "cards" in include:
-                    cards = await self.repo.get_cards_by_customer_id(
-                        customer_id, limit=relations_limit, offset=relations_offset
+                    cards, cards_total = await self.repo.get_cards_by_customer_id(
+                        customer_id, page=cards_page, page_size=cards_page_size
                     )
-                    customer_data["cards"] = [CardRead.model_validate(c) for c in cards]
-                else:
-                    customer_data["cards"] = []
+                    result["cards"] = {
+                        "items": [CardRead.model_validate(c) for c in cards],
+                        "total": cards_total
+                    }
 
                 if "transactions" in include:
                     try:
-                        transactions = await self.repo.get_transactions_by_customer_id(
-                            customer_id, limit=relations_limit, offset=relations_offset
+                        transactions, transactions_total = await self.repo.get_transactions_by_customer_id(
+                            customer_id, page=transactions_page, page_size=transactions_page_size
                         )
-                        customer_data["transactions"] = [
-                            TransactionRead.model_validate(t) for t in transactions
-                        ]
+                        result["transactions"] = {
+                            "items": [TransactionRead.model_validate(t) for t in transactions],
+                            "total": transactions_total
+                        }
                     except Exception as e:
                         logger.error(
                             f"Failed to fetch or validate transactions for customer {customer_id}: {str(e)}",
@@ -131,21 +140,17 @@ class CustomerService:
                             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Failed to fetch transactions: {str(e)}"
                         )
-                    customer_data["transactions"] = [
-                        TransactionRead.model_validate(t) for t in transactions
-                    ]
-                else:
-                    customer_data["transactions"] = []
 
                 if "loans" in include:
-                    loans = await self.repo.get_loans_by_customer_id(
-                        customer_id, limit=relations_limit, offset=relations_offset
+                    loans, loans_total = await self.repo.get_loans_by_customer_id(
+                        customer_id, page=loans_page, page_size=loans_page_size
                     )
-                    customer_data["loans"] = [LoanRead.model_validate(l) for l in loans]
-                else:
-                    customer_data["loans"] = []
+                    result["loans"] = {
+                        "items": [LoanRead.model_validate(l) for l in loans],
+                        "total": loans_total
+                    }
 
-            return CustomerReadWithRelations.model_validate(customer_data)
+            return result
         except HTTPException as e:
             raise e
         except Exception as e:
