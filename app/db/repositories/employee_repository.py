@@ -1,5 +1,5 @@
-from typing import List, Optional
-from sqlalchemy import select, delete
+from typing import List, Optional, Tuple
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Employee
@@ -39,26 +39,23 @@ class EmployeeRepository:
         await self.session.commit()
         return employee
 
-    async def get_all_employees(self, limit: int = 10, offset: int = 0) -> List[Employee]:
+    async def get_all_employees(self, page: int = 1, page_size: int = 10) -> Tuple[List[Employee], int]:
         """
         Retrieve all employees with pagination.
-        
-        :param limit: Number of records to return.
-        :param offset: Number of records to skip.
-        :return: List of Employee objects.
-        """
-        stmt = select(Employee).order_by(Employee.id).offset(offset).limit(limit)
-        result = await self.session.execute(stmt)
-        return result.scalars().all()
 
-    async def delete(self, employee_id: int) -> bool:
+        :param page: Page number (1-based).
+        :param page_size: Number of records per page.
+        :return: Tuple of (list of Employee objects, total count).
         """
-        Delete an employee by their ID.
-        
-        :param employee_id: The ID of the employee to delete.
-        :return: True if the employee was deleted, False if not found.
-        """
-        stmt = delete(Employee).where(Employee.id == employee_id)
+        offset = (page - 1) * page_size
+        # Query for employees
+        stmt = select(Employee).order_by(Employee.id).offset(offset).limit(page_size)
         result = await self.session.execute(stmt)
-        await self.session.commit()
-        return result.rowcount > 0
+        employees = result.scalars().all()
+        
+        # Query for total count
+        count_stmt = select(func.count()).select_from(Employee)
+        total_result = await self.session.execute(count_stmt)
+        total = total_result.scalar_one()
+        
+        return employees, total

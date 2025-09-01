@@ -24,6 +24,12 @@ class CustomerRead(BaseModel):
     class Config:
         from_attributes = True
 
+class PaginatedCustomers(BaseModel):
+    items: List[CustomerRead]
+    page: int
+    page_size: int
+    total: int
+
 class CustomerReadWithRelations(CustomerRead):
     accounts: List[AccountRead] = []
     cards: List[CardRead] = []

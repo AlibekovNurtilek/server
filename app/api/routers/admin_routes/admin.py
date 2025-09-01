@@ -7,10 +7,10 @@ from app.api.deps import get_db_session, get_current_employee, EMPLOYEE_SESSION_
 from app.schemas.auth_schemas import EmplyeeLoginRequest, EmplyeeOut
 from app.services.admin_services.auth_service import AuthService
 from app.services.customer_services.customer_service import CustomerService
-from app.schemas.customer_schemas import CustomerRead, CustomerReadWithRelations
+from app.schemas.customer_schemas import CustomerRead, CustomerReadWithRelations, PaginatedCustomers
 from app.services.admin_services.employee_service import EmployeeService
 from app.db.models import EmployeeRole, Employee
-from app.schemas.employee_schemas import EmployeeRead, EmployeeCreate
+from app.schemas.employee_schemas import EmployeeRead, EmployeeCreate, PaginatedEmployees
 
 router = APIRouter(prefix="/api/admin", tags=["admin_part"])
 
@@ -33,15 +33,15 @@ async def get_me(current=Depends(get_current_employee)):
     return EmplyeeOut.model_validate(current)
 
 
-@router.get("/customers", response_model=List[CustomerRead])
+@router.get("/customers", response_model=PaginatedCustomers)
 async def get_all_customers(
-    limit: int = 10,
-    offset: int = 0,
+    page: int = 1,
+    page_size: int = 10,
     session: AsyncSession = Depends(get_db_session),
     current_employee: Employee = Depends(get_current_employee),
 ):
     """
-    Retrieve all customers with pagination.
+    Retrieve all customers with pagination (page/page_size).
     Only accessible to admin or manager roles.
     """
     if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
@@ -51,7 +51,13 @@ async def get_all_customers(
         )
     try:
         service = CustomerService(session)
-        return await service.get_all_customers(limit=limit, offset=offset)
+        result = await service.get_all_customers(page=page, page_size=page_size)
+        return {
+            "items": result["customers"],
+            "page": page,
+            "page_size": page_size,
+            "total": result["total"]
+        }
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -97,25 +103,36 @@ async def get_customer_by_id(
         )
 
 
-@router.get("/employees", response_model=List[EmployeeRead])
+@router.get("/employees", response_model=PaginatedEmployees)
 async def get_all_employees(
-    limit: int = 10,
-    offset: int = 0,
+    page: int = 1,
+    page_size: int = 10,
     session: AsyncSession = Depends(get_db_session),
     current_employee: Employee = Depends(get_current_employee),
 ):
     """
     Получить всех сотрудников с пагинацией.
-    Доступно только для ролей admin или manager.
+    Доступно только для ролей admin.
     """
     if current_employee.role not in [EmployeeRole.admin]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Доступ ограничен"
         )
+    if page < 1 or page_size < 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page и page_size должны быть положительными числами"
+        )
     try:
         service = EmployeeService(session)
-        return await service.get_all_employees(limit=limit, offset=offset)
+        result = await service.get_all_employees(page=page, page_size=page_size)
+        return {
+            "items": result["employees"],
+            "page": page,
+            "page_size": page_size,
+            "total": result["total"]
+        }
     except HTTPException as e:
         raise e
     except Exception as e:

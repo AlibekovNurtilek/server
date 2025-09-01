@@ -76,9 +76,9 @@ class InfoService:
                     "category": category,
                     "items": paginated_items,
                     "page": page,
+                    "total": total_items,
                     "page_size": page_size,
-                    "total_items": total_items,
-                    "total_pages": total_pages
+                    
                 }
         except json.JSONDecodeError as e:
             logger.error(f"Ошибка парсинга JSON в файле {file_path}: {str(e)}")

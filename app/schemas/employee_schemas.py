@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from pydantic import BaseModel, constr, EmailStr
 from datetime import datetime
+from typing import List
 
 from app.db.models import  EmployeeRole
 
@@ -18,3 +19,9 @@ class EmployeeRead(BaseModel):
 class EmployeeCreate(BaseModel):
     username: constr(min_length=3, max_length=50)
     password: constr(min_length=4)
+
+class PaginatedEmployees(BaseModel):
+    items: List[EmployeeRead]
+    page: int
+    page_size: int
+    total: int

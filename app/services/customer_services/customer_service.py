@@ -1,7 +1,7 @@
 # app/services/customer_services/customer_service.py
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,20 +29,22 @@ class CustomerService:
         self.session = session
         self.repo = CustomerRepository(session)
 
-    async def get_all_customers(
-        self, limit: int = 10, offset: int = 0
-    ) -> List[CustomerRead]:
+    async def get_all_customers(self, page: int = 1, page_size: int = 10) -> Dict:
         """
         Retrieve all customers with pagination.
 
-        :param limit: Number of records to return.
-        :param offset: Number of records to skip.
-        :return: List of customers as schemas.
+        :param page: Page number (1-based).
+        :param page_size: Number of records per page.
+        :return: Dictionary with customers and total count.
         :raises HTTPException: If an error occurs.
         """
         try:
-            customers = await self.repo.get_all_customers(limit=limit, offset=offset)
-            return [CustomerRead.model_validate(c) for c in customers]
+            offset = (page - 1) * page_size
+            customers, total = await self.repo.get_all_customers(page=page, page_size=page_size)
+            return {
+                "customers": [CustomerRead.model_validate(c) for c in customers],
+                "total": total
+            }
         except Exception as e:
             logger.error(f"Failed to retrieve customers: {str(e)}")
             raise HTTPException(

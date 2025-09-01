@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
 from app.api.deps import get_db_session, get_current_employee, EMPLOYEE_SESSION_KEY

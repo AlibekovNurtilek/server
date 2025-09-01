@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel, constr, EmailStr
@@ -82,13 +82,23 @@ class EmployeeService:
         if not success:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
 
-    async def get_all_employees(self, limit: int = 10, offset: int = 0) -> List[EmployeeRead]:
+    async def get_all_employees(self, page: int = 1, page_size: int = 10) -> Dict:
         """
         Retrieve all employees with pagination.
-        
-        :param limit: Number of records to return.
-        :param offset: Number of records to skip.
-        :return: List of EmployeeRead schemas.
+
+        :param page: Page number (1-based).
+        :param page_size: Number of records per page.
+        :return: Dictionary with employees and total count.
         """
-        employees = await self.repository.get_all_employees(limit=limit, offset=offset)
-        return [EmployeeRead.from_orm(employee) for employee in employees]
+        try:
+            offset = (page - 1) * page_size
+            employees, total = await self.repository.get_all_employees(page=page, page_size=page_size)
+            return {
+                "employees": [EmployeeRead.from_orm(employee) for employee in employees],
+                "total": total
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Не удалось получить сотрудников"
+            )
