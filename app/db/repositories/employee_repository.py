@@ -59,3 +59,18 @@ class EmployeeRepository:
         total = total_result.scalar_one()
         
         return employees, total
+    
+    async def delete(self, employee_id: int) -> bool:
+        """
+        Delete an employee by their ID.
+
+        :param employee_id: The ID of the employee to delete.
+        :return: True if the employee was found and deleted, False otherwise.
+        """
+        employee = await self.get_by_id(employee_id)
+        if not employee:
+            return False
+
+        await self.session.delete(employee)
+        await self.session.commit()
+        return True

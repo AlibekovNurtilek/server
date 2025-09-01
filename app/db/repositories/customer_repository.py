@@ -3,6 +3,10 @@ from sqlalchemy import select, or_, union_all, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import text
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from app.db.models import Customer, Account, Card, Transaction, Loan
 
@@ -105,44 +109,43 @@ class CustomerRepository:
         :return: Tuple of (list of Transaction objects, total count).
         """
         offset = (page - 1) * page_size
-        # Query for transactions
-        outgoing_stmt = (
+        
+        # Основной запрос с DISTINCT чтобы избежать дубликатов
+        stmt = (
             select(Transaction)
-            .join(Account, Transaction.from_account_id == Account.id)
+            .distinct()
+            .join(
+                Account, 
+                or_(
+                    Transaction.from_account_id == Account.id,
+                    Transaction.to_account_id == Account.id
+                )
+            )
             .where(Account.customer_id == customer_id)
-        )
-        incoming_stmt = (
-            select(Transaction)
-            .join(Account, Transaction.to_account_id == Account.id)
-            .where(Account.customer_id == customer_id)
-        )
-        union_stmt = union_all(outgoing_stmt, incoming_stmt).subquery()
-        final_stmt = (
-            select(Transaction)
-            .select_from(union_stmt)
-            .order_by(Transaction.id)
+            .order_by(Transaction.created_at.desc(), Transaction.id.desc())
             .offset(offset)
             .limit(page_size)
         )
-        result = await self.session.execute(final_stmt)
+        
+        result = await self.session.execute(stmt)
         transactions = result.scalars().all()
         
-        # Query for total count (separately for outgoing and incoming)
-        count_outgoing = (
-            select(func.count())
+        # Запрос для подсчета общего количества (тоже с DISTINCT)
+        count_stmt = (
+            select(func.count(func.distinct(Transaction.id)))
             .select_from(Transaction)
-            .join(Account, Transaction.from_account_id == Account.id)
+            .join(
+                Account, 
+                or_(
+                    Transaction.from_account_id == Account.id,
+                    Transaction.to_account_id == Account.id
+                )
+            )
             .where(Account.customer_id == customer_id)
         )
-        count_incoming = (
-            select(func.count())
-            .select_from(Transaction)
-            .join(Account, Transaction.to_account_id == Account.id)
-            .where(Account.customer_id == customer_id)
-        )
-        outgoing_result = await self.session.execute(count_outgoing)
-        incoming_result = await self.session.execute(count_incoming)
-        total = (outgoing_result.scalar_one() or 0) + (incoming_result.scalar_one() or 0)
+        
+        count_result = await self.session.execute(count_stmt)
+        total = count_result.scalar_one() or 0
         
         return transactions, total
 

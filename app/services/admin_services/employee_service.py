@@ -81,6 +81,7 @@ class EmployeeService:
         success = await self.repository.delete(employee_id)
         if not success:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+        return ("Employee deletet succesfully")
 
     async def get_all_employees(self, page: int = 1, page_size: int = 10) -> Dict:
         """

@@ -1,7 +1,7 @@
 {
   "get_balance": {
     "name": "get_balance",
-    "description": "Колдонуучунун  жалпы балансын алуу."
+    "description": "Колдонуучунун  жалпы балансын алуу"
   },
   "get_transactions": {
     "name": "get_transactions",
