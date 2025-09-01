@@ -7,10 +7,15 @@ from app.api.deps import get_db_session, get_current_employee, EMPLOYEE_SESSION_
 from app.schemas.auth_schemas import EmplyeeLoginRequest, EmplyeeOut
 from app.services.admin_services.auth_service import AuthService
 from app.services.customer_services.customer_service import CustomerService
-from app.schemas.customer_schemas import CustomerRead, CustomerReadWithRelations, PaginatedCustomers
+from app.schemas.customer_schemas import CustomerRead, PaginatedItems, AccountRead, CardRead, TransactionRead, LoanRead, PaginatedCustomers
 from app.services.admin_services.employee_service import EmployeeService
 from app.db.models import EmployeeRole, Employee
 from app.schemas.employee_schemas import EmployeeRead, EmployeeCreate, PaginatedEmployees
+
+import logging
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
 
 router = APIRouter(prefix="/api/admin", tags=["admin_part"])
 
@@ -67,23 +72,14 @@ async def get_all_customers(
         )
 
 
-@router.get("/customers/{customer_id}", response_model=CustomerReadWithRelations)
+@router.get("/customers/{customer_id}", response_model=CustomerRead)
 async def get_customer_by_id(
     customer_id: int,
-    include: Optional[str] = None,  # e.g., "accounts,cards,transactions,loans"
-    accounts_page: int = Query(1, ge=1),
-    accounts_page_size: int = Query(10, ge=1),
-    cards_page: int = Query(1, ge=1),
-    cards_page_size: int = Query(10, ge=1),
-    transactions_page: int = Query(1, ge=1),
-    transactions_page_size: int = Query(10, ge=1),
-    loans_page: int = Query(1, ge=1),
-    loans_page_size: int = Query(10, ge=1),
     session: AsyncSession = Depends(get_db_session),
     current_employee: Employee = Depends(get_current_employee),
 ):
     """
-    Retrieve a customer by ID with optional related data (accounts, cards, transactions, loans).
+    Retrieve a customer by ID.
     Only accessible to admin or manager roles.
     """
     if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
@@ -93,65 +89,176 @@ async def get_customer_by_id(
         )
     try:
         service = CustomerService(session)
-        include_list = include.split(",") if include else []
-        result = await service.get_customer_by_id(
-            customer_id=customer_id,
-            include=include_list,
-            accounts_page=accounts_page,
-            accounts_page_size=accounts_page_size,
-            cards_page=cards_page,
-            cards_page_size=cards_page_size,
-            transactions_page=transactions_page,
-            transactions_page_size=transactions_page_size,
-            loans_page=loans_page,
-            loans_page_size=loans_page_size,
-        )
-
-        # Формируем ответ в маршруте
-        customer_data = {
-            "id": result["customer"].id,
-            "first_name": result["customer"].first_name,
-            "last_name": result["customer"].last_name,
-            "middle_name": result["customer"].middle_name,
-            "birth_date": result["customer"].birth_date,
-            "passport_number": result["customer"].passport_number,
-            "phone_number": result["customer"].phone_number,
-            "email": result["customer"].email,
-            "address": result["customer"].address,
-            "created_at": result["customer"].created_at,
-            "updated_at": result["customer"].updated_at,
-            "accounts": {
-                "items": result["accounts"]["items"],
-                "page": accounts_page,
-                "page_size": accounts_page_size,
-                "total": result["accounts"]["total"]
-            },
-            "cards": {
-                "items": result["cards"]["items"],
-                "page": cards_page,
-                "page_size": cards_page_size,
-                "total": result["cards"]["total"]
-            },
-            "transactions": {
-                "items": result["transactions"]["items"],
-                "page": transactions_page,
-                "page_size": transactions_page_size,
-                "total": result["transactions"]["total"]
-            },
-            "loans": {
-                "items": result["loans"]["items"],
-                "page": loans_page,
-                "page_size": loans_page_size,
-                "total": result["loans"]["total"]
-            }
-        }
-        return customer_data
+        customer = await service.get_customer_by_id(customer_id)
+        if not customer:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Customer not found"
+            )
+        return customer
     except HTTPException as e:
         raise e
     except Exception as e:
+        logger.error(f"Failed to retrieve customer {customer_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve customer: {str(e)}"
+        )
+
+@router.get("/customers/{customer_id}/accounts", response_model=PaginatedItems[AccountRead])
+async def get_customer_accounts(
+    customer_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1),
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Retrieve paginated accounts for a customer by ID.
+    Only accessible to admin or manager roles.
+    """
+    if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or manager roles"
+        )
+    try:
+        service = CustomerService(session)
+        accounts, total = await service.get_accounts_by_customer_id(
+            customer_id=customer_id,
+            page=page,
+            page_size=page_size
+        )
+        return {
+            "items": accounts,
+            "page": page,
+            "page_size": page_size,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Failed to retrieve accounts for customer {customer_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve accounts: {str(e)}"
+        )
+
+@router.get("/customers/{customer_id}/cards", response_model=PaginatedItems[CardRead])
+async def get_customer_cards(
+    customer_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1),
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Retrieve paginated cards for a customer by ID.
+    Only accessible to admin or manager roles.
+    """
+    if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or manager roles"
+        )
+    try:
+        service = CustomerService(session)
+        cards, total = await service.get_cards_by_customer_id(
+            customer_id=customer_id,
+            page=page,
+            page_size=page_size
+        )
+        return {
+            "items": cards,
+            "page": page,
+            "page_size": page_size,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Failed to retrieve cards for customer {customer_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve cards: {str(e)}"
+        )
+
+@router.get("/customers/{customer_id}/transactions", response_model=PaginatedItems[TransactionRead])
+async def get_customer_transactions(
+    customer_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1),
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Retrieve paginated transactions for a customer by ID.
+    Only accessible to admin or manager roles.
+    """
+    if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or manager roles"
+        )
+    try:
+        service = CustomerService(session)
+        transactions, total = await service.get_transactions_by_customer_id(
+            customer_id=customer_id,
+            page=page,
+            page_size=page_size
+        )
+        return {
+            "items": transactions,
+            "page": page,
+            "page_size": page_size,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Failed to retrieve transactions for customer {customer_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve transactions: {str(e)}"
+        )
+
+@router.get("/customers/{customer_id}/loans", response_model=PaginatedItems[LoanRead])
+async def get_customer_loans(
+    customer_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1),
+    session: AsyncSession = Depends(get_db_session),
+    current_employee: Employee = Depends(get_current_employee),
+):
+    """
+    Retrieve paginated loans for a customer by ID.
+    Only accessible to admin or manager roles.
+    """
+    if current_employee.role not in [EmployeeRole.admin, EmployeeRole.manager]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or manager roles"
+        )
+    try:
+        service = CustomerService(session)
+        loans, total = await service.get_loans_by_customer_id(
+            customer_id=customer_id,
+            page=page,
+            page_size=page_size
+        )
+        return {
+            "items": loans,
+            "page": page,
+            "page_size": page_size,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Failed to retrieve loans for customer {customer_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve loans: {str(e)}"
         )
 
 

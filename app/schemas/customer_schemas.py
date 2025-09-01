@@ -1,5 +1,3 @@
-# app/schemas/customer_schemas.py
-
 from datetime import date, datetime
 from typing import Optional, List, Generic, TypeVar
 from pydantic import BaseModel
@@ -37,9 +35,3 @@ class PaginatedCustomers(BaseModel):
     page: int
     page_size: int
     total: int
-
-class CustomerReadWithRelations(CustomerRead):
-    accounts: PaginatedItems[AccountRead] = PaginatedItems(items=[], page=1, page_size=10, total=0)
-    cards: PaginatedItems[CardRead] = PaginatedItems(items=[], page=1, page_size=10, total=0)
-    transactions: PaginatedItems[TransactionRead] = PaginatedItems(items=[], page=1, page_size=10, total=0)
-    loans: PaginatedItems[LoanRead] = PaginatedItems(items=[], page=1, page_size=10, total=0)

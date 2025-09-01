@@ -1,18 +1,10 @@
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Request, HTTPException, status
-from starlette.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, HTTPException
+from typing import List, Dict, Any
 from pydantic import BaseModel
 
-from app.api.deps import get_db_session, get_current_employee, EMPLOYEE_SESSION_KEY
-from app.schemas.auth_schemas import EmplyeeLoginRequest, EmplyeeOut
-from app.services.admin_services.auth_service import AuthService
-from app.services.customer_services.customer_service import CustomerService
-from app.schemas.customer_schemas import CustomerRead, CustomerReadWithRelations
-from app.db.models import EmployeeRole, Employee
 from app.services.knowledge_services.about_us import AboutUsService
 from app.services.knowledge_services.cards import CardsService
 from app.services.knowledge_services.deposit import DepositService
