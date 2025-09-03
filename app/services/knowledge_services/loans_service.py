@@ -115,4 +115,110 @@ class LoansService:
             raise HTTPException(status_code=500, detail="Ошибка при чтении файла")
         except Exception as e:
             logger.error(f"Ошибка при записи файла {file_path}: {str(e)}")
-            raise HTTPException(status_code=500, detail="Ошибка при обновлении файла")            
+            raise HTTPException(status_code=500, detail="Ошибка при обновлении файла")
+
+    async def get_loan_products(self, lang: str) -> list:
+        """Читает содержимое loan_products из loans.json для указанного языка, возвращая только доступные поля."""
+        file_path = self._get_file_path(lang)
+        logger.debug(f"Чтение файла: {file_path}")
+
+        if not file_path.exists():
+            logger.error(f"Файл не найден: {file_path}")
+            raise HTTPException(status_code=404, detail=f"Файл {self.filename} для языка {lang} не найден")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+                if "loan_products" not in data:
+                    logger.error(f"Некорректная структура файла: {file_path}")
+                    raise HTTPException(status_code=422, detail="Файл не содержит ключ 'loan_products'")
+
+                result = []
+                for product in data["loan_products"]:
+                    product_obj = {"type": product.get("type"), "name": product.get("name")}
+                    # Проверяем наличие каждого необязательного поля
+                    if "description" in product:
+                        product_obj["description"] = product["description"]
+                    if "purposes" in product:
+                        product_obj["purposes"] = product["purposes"]
+                    if "advantages" in product:
+                        product_obj["advantages"] = product["advantages"]
+
+                    result.append(product_obj)
+
+                return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Ошибка парсинга JSON в файле {file_path}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Ошибка при чтении файла")
+        except Exception as e:
+            logger.error(f"Неизвестная ошибка при чтении файла {file_path}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+
+
+
+    async def get_subcategories(self, lang: str, loan_type: str) -> list:
+        """Возвращает subcategories для указанного типа кредита."""
+        file_path = self._get_file_path(lang)
+
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail=f"Файл {self.filename} для языка {lang} не найден")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            loan_products = data.get("loan_products", [])
+            for product in loan_products:
+                if product.get("type") == loan_type:
+                    return product.get("subcategories", [])  # Возвращаем subcategories или пустой список
+            # Если loan_type не найден
+            raise HTTPException(status_code=404, detail=f"Кредитный продукт '{loan_type}' не найден")
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Ошибка при чтении JSON")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+    async def get_special_offers(self, lang: str, loan_type: str) -> dict:
+        file_path = self._get_file_path(lang)
+
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail=f"Файл {self.filename} для языка {lang} не найден")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            loan_products = data.get("loan_products", [])
+            for product in loan_products:
+                if product.get("type") == loan_type:
+                    return product.get("special_offers", {})
+
+            raise HTTPException(status_code=404, detail=f"Кредитный продукт '{loan_type}' не найден")
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Ошибка при чтении JSON")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+    async def get_special_programs(self, lang: str, loan_type: str) -> list:
+        file_path = self._get_file_path(lang)
+
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail=f"Файл {self.filename} для языка {lang} не найден")
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            loan_products = data.get("loan_products", [])
+            for product in loan_products:
+                if product.get("type") == loan_type:
+                    # special_programs может отсутствовать, вернём пустой список
+                    return product.get("special_programs", [])
+
+            raise HTTPException(status_code=404, detail=f"Кредитный продукт '{loan_type}' не найден")
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Ошибка при чтении JSON")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+

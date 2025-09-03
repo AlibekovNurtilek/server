@@ -15,6 +15,8 @@ from app.services.knowledge_services.system_prompts_service import SystemPrompts
 from app.services.knowledge_services.loans_service import LoansService
 from app.schemas.loan_schemas import RequiredDocuments
 
+
+
 KNOWLEDGE_BASE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", "knowledge"))
 
 about_us_service = AboutUsService(base_dir=KNOWLEDGE_BASE_DIR)
@@ -341,4 +343,74 @@ async def update_required_documents(
     except HTTPException as e:
         raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")        
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")    
+
+
+
+
+@router.get("/loan-products")
+async def get_loan_products(
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    """
+    Возвращает список всех кредитных продуктов для указанного языка.
+    """
+    try:
+        return await loan_service.get_loan_products(lang)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+
+
+@router.get("/loan-products/{loan_type}/subcategories")
+async def get_loan_subcategories(
+    loan_type: str,
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    """
+    Возвращает subcategories выбранного кредитного продукта.
+    """
+    try:
+        return await loan_service.get_subcategories(lang, loan_type)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+@router.get("/loan-products/{loan_type}/special-offers")
+async def get_loan_special_offers(
+    loan_type: str,
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    """
+    Возвращает special_offers выбранного кредитного продукта.
+    """
+    try:
+        return await loan_service.get_special_offers(lang, loan_type)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+@router.get("/loan-products/{loan_type}/special-programs")
+async def get_loan_special_programs(
+    loan_type: str,
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    """
+    Возвращает special_programs выбранного кредитного продукта.
+    """
+    try:
+        return await loan_service.get_special_programs(lang, loan_type)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+
