@@ -13,6 +13,7 @@ from app.services.knowledge_services.info_service import InfoService
 from app.services.knowledge_services.schemas import SchemasService
 from app.services.knowledge_services.system_prompts_service import SystemPromptsService
 from app.services.knowledge_services.loans_service import LoansService
+from app.schemas.loan_schemas import RequiredDocuments
 
 KNOWLEDGE_BASE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", "knowledge"))
 
@@ -313,3 +314,31 @@ async def update_loan_application_process(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+
+
+
+@router.get("/required-documents")
+async def get_required_documents(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
+    try:
+        return await loan_service.get_required_documents(lang)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
+
+@router.patch("/required-documents")
+async def update_required_documents(
+    lang: str = "ky",
+    documents_data: RequiredDocuments = None,
+    loan_service: LoansService = Depends(get_loan_service)
+):
+   
+    if documents_data is None:
+        raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
+    
+    try:
+        return await loan_service.update_required_documents(lang, documents_data.dict())
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")        
