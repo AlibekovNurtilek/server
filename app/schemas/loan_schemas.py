@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from pydantic import BaseModel
 from app.db.models import LoanType, LoanStatus
+from typing import Dict
+
 
 class LoanRead(BaseModel):
     id: int
@@ -16,3 +18,8 @@ class LoanRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+
+class RequiredDocuments(BaseModel):
+    documents: Dict[str, str] 
