@@ -362,7 +362,20 @@ async def get_loan_products(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
-
+@router.patch("/loan-products")
+async def patch_loan_products(
+    loan_products_data: List[dict], 
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+   
+    try:
+        result = await loan_service.update_loan_products(lang, loan_products_data)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
 
 @router.get("/loan-products/{loan_type}/subcategories")
@@ -371,9 +384,6 @@ async def get_loan_subcategories(
     lang: str = "ky",
     loan_service: LoansService = Depends(get_loan_service)
 ):
-    """
-    Возвращает subcategories выбранного кредитного продукта.
-    """
     try:
         return await loan_service.get_subcategories(lang, loan_type)
     except HTTPException as e:
@@ -381,6 +391,21 @@ async def get_loan_subcategories(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
+@router.patch("/loan-products/{loan_type}/subcategories")
+async def patch_loan_subcategories(
+    loan_type: str,
+    subcategories_data: List[dict],  # список субкатегорий для обновления
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+   
+    try:
+        result = await loan_service.update_loan_subcategories(lang, loan_type, subcategories_data)
+        return result
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 @router.get("/loan-products/{loan_type}/special-offers")
 async def get_loan_special_offers(
     loan_type: str,
@@ -396,6 +421,22 @@ async def get_loan_special_offers(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
+@router.patch("/loan-products/{loan_type}/special-offers")
+async def patch_special_offers(
+    loan_type: str,
+    special_offers_data: dict,  
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+  
+    try:
+        return await loan_service.update_loan_special_offers(lang, loan_type, special_offers_data)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+
 
 @router.get("/loan-products/{loan_type}/special-programs")
 async def get_loan_special_programs(
@@ -413,4 +454,19 @@ async def get_loan_special_programs(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
-
+@router.patch("/loan-products/{loan_type}/special-programs")
+async def patch_special_programs(
+    loan_type: str,
+    special_programs_data: List[dict], 
+    lang: str = "ky",
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    """
+    Обновляет поле special_programs для указанного типа кредита.
+    """
+    try:
+        return await loan_service.update_loan_special_programs(lang, loan_type, special_programs_data)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
