@@ -11,16 +11,17 @@ from app.services.knowledge_services.deposit import DepositService
 from app.services.knowledge_services.info_service import InfoService
 from app.services.knowledge_services.schemas import SchemasService
 from app.services.knowledge_services.system_prompts_service import SystemPromptsService
+from app.services.knowledge_services.loans_service import LoansService
 
-
-router = APIRouter(prefix="/api/admin/knowledge", tags=["knowledge"])
 KNOWLEDGE_BASE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", "knowledge"))
+
 about_us_service = AboutUsService(base_dir=KNOWLEDGE_BASE_DIR)
 card_service = CardsService(base_dir=KNOWLEDGE_BASE_DIR)
 deposit_service = DepositService(base_dir=KNOWLEDGE_BASE_DIR)
 info_service = InfoService(base_dir=KNOWLEDGE_BASE_DIR)
 schemas_service = SchemasService(base_dir=KNOWLEDGE_BASE_DIR)
 system_prompts_service = SystemPromptsService(base_dir=KNOWLEDGE_BASE_DIR)
+loans_service = LoansService(base_dir=KNOWLEDGE_BASE_DIR)
 
 
 class AboutUsRequest(BaseModel):
@@ -28,6 +29,7 @@ class AboutUsRequest(BaseModel):
 class CardsRequest(BaseModel):
     cards: dict
     
+router = APIRouter(prefix="/api/admin/knowledge", tags=["knowledge"])
 
 @router.get("/about-us")
 async def get_about_us(lang: str = "ky"):
