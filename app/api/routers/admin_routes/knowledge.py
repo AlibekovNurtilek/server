@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any
 from pydantic import BaseModel
+from fastapi import Depends, FastAPI
 
 from app.services.knowledge_services.about_us import AboutUsService
 from app.services.knowledge_services.cards import CardsService
@@ -257,6 +258,57 @@ async def update_prompt(lang: str = "ky", prompt_key: str = None, data: dict = N
     
     try:
         return await system_prompts_service.update_prompt(lang, prompt_key, data)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+
+
+
+
+
+
+
+
+
+from app.services.knowledge_services.loans_service import LoansService
+import logging
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/loans", tags=["loans"])
+
+# Pydantic model for loan_application_process
+class LoanApplicationProcess(BaseModel):
+    steps: List[str]
+    review_time: str
+
+# Dependency to initialize LoansService
+def get_loan_service():
+    base_dir = Path("knowledge")  # Adjust the base directory as needed
+    return LoansService(base_dir=base_dir)
+
+@router.get("/application-process")
+async def get_loan_application_process(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
+    try:
+        return await loan_service.get_loan_application_process(lang)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
+
+@router.patch("/application-process")
+async def update_loan_application_process(
+    lang: str = "ky",
+    loan_data: LoanApplicationProcess = None,
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    
+    if loan_data is None:
+        raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
+    
+    try:
+        return await loan_service.update_loan_application_process(lang, loan_data.dict())
     except HTTPException as e:
         raise e
     except Exception as e:
