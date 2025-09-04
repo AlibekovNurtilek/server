@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional, Dict, Any, Generic, TypeVar
+from pydantic import BaseModel
+from pydantic.generics import GenericModel
 
 from app.api.deps import get_db_session, get_current_employee
 from app.db.models import EmployeeRole, Employee
@@ -11,14 +14,31 @@ from app.schemas.application_schemas import (
     CardApplicationRead,
     CardApplicationUpdateStatus,
 )
-from app.schemas.customer_schemas import PaginatedItems
+from app.schemas.customer_schemas import CustomerRead
+
+
+# ---------- Generic Pagination ----------
+T = TypeVar("T")
+
+
+class PaginatedItems(GenericModel, Generic[T]):
+    items: List[T]
+    page: int
+    page_size: int
+    total: int
+
+
+# ---------- Loan Applications ----------
+class EnrichedLoanApplication(BaseModel):
+    application: LoanApplicationRead
+    customer: Optional[CustomerRead]
+    loan_info: Dict[str, Any]
 
 
 router = APIRouter(prefix="/api/admin/applications", tags=["applications"])
 
 
-# ---------------- Loan Applications ----------------
-@router.get("/loans", response_model=PaginatedItems[LoanApplicationRead])
+@router.get("/loans", response_model=PaginatedItems[EnrichedLoanApplication])
 async def get_loan_applications(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1),
@@ -37,8 +57,9 @@ async def get_loan_applications(
 
     service = LoanApplicationService(session)
     result = await service.get_all(page=page, page_size=page_size)
+
     return {
-        "items": result["loan_applications"],
+        "items": result["loan_applications"],  # список EnrichedLoanApplication
         "page": page,
         "page_size": page_size,
         "total": result["total"],
@@ -66,7 +87,7 @@ async def update_loan_application_status(
     return await service.update_status(application_id, payload)
 
 
-# ---------------- Card Applications ----------------
+# ---------- Card Applications ----------
 @router.get("/cards", response_model=PaginatedItems[CardApplicationRead])
 async def get_card_applications(
     page: int = Query(1, ge=1),
