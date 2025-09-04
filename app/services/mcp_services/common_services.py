@@ -589,3 +589,260 @@ def get_faq_by_category(category: str, lang: str = "ky") -> str:
         if category_name.lower() == category.lower():
             return data.get(category_name, [])
     return "Категория табылган жок."
+
+
+
+
+from fuzzywuzzy import fuzz
+
+LOANS_FILENAME = "loans.json"
+
+def load_loans_data(lang: str = "ky") -> Dict[str, Any]:
+    try:
+        with open(KNOWLEDGE_BASE_DIR.joinpath(lang, LOANS_FILENAME), encoding='utf-8') as f:
+            cards_json = json.load(f)
+            return cards_json.get('loan_products', {})
+    except Exception as e:
+        logging.exception(f"Error loading cards data: {e}")
+        return {}
+
+def list_all_loans(lang: str = "ky") -> List[Dict[str, str]]:
+    loans = load_loans_data(lang)
+    result = []
+    
+    for loan_type in loans:
+        type_name = loan_type.get('name', '')
+        type_id = loan_type.get('type', '')
+        
+        # Добавляем основной тип кредита
+        result.append({
+            'name': type_name,
+        })
+        
+        # Добавляем подкатегории
+        for subcategory in loan_type.get('subcategories', []):
+            result.append({
+                'name': type_name,
+                'category': subcategory.get('name', ''),
+                'subcategory': ''
+            })
+        
+        # Добавляем специальные программы (если есть)
+        for special_program in loan_type.get('special_programs', []):
+            result.append({
+                'name': type_name ,
+                'category': f"{special_program.get('name', '')} {"(атайын программа алгагында)" if lang == "ky" else "(на основе спец. программ)"}",
+                'subcategory': ''
+            })
+        
+        # Добавляем специальные предложения для ипотеки (если есть)
+        for region in loan_type.get('special_offers', {}).values():
+            for offer in region:
+                result.append({
+                    'name': type_name,
+                    'category': f"{offer.get('name', '')} {"(ипотека)"}",
+                    'subcategory': ''
+                })
+    
+    return result
+
+import logging
+from fuzzywuzzy import fuzz
+
+def loan_details(loan_name: str, lang: str = "ky") -> str:
+    loans = load_loans_data(lang)
+    
+    # Error message translations
+    error_messages = {
+        "ky": "Ката: кредиттер жөнүндө маалыматты жүктөө мүмкүн болгон жок.",
+        "ru": "Ошибка: не удалось загрузить данные о кредитах."
+    }
+    not_found_messages = {
+        "ky": "Кредит табылган жок. Сураныч, аталышын тактаңыз же кайра аракет кылыңыз.",
+        "ru": "Кредит не найден. Пожалуйста, уточните название или попробуйте снова."
+    }
+    
+    if not loans:
+        return error_messages.get(lang, error_messages["ru"])
+
+    loan_name = loan_name.strip().lower()
+
+    best_match = None
+    best_score = 0
+    best_details = {}
+    threshold = 80
+    matches = []
+
+    # Translations for keys in the output
+    key_translations = {
+        "ky": {
+            "description": "Сүрөттөмө",
+            "advantages": "Артыкчылыктар",
+            "purposes": "Максаттар",
+            "subcategories": "Түрлөрү",
+            "special_programs": "Атайын программалар",
+            "special_offers": "Атайын сунуштар",
+            "purpose": "Максаты",
+            "amount": "Суммасы",
+            "term": "Мөөнөтү",
+            "rates": "Пайыздык чендер",
+            "collateral": "Күрөө",
+            "effective_rate": "Эффективдүү чен",
+            "commission": "Комиссия",
+            "processing": "Иштетүү",
+            "disbursement": "Берилиш",
+            "repayment": "Төлөө",
+            "app": "Колдонмо",
+            "own_funds": "Өз каражаттары",
+            "conditions": "Шарттар",
+            "company": "Компания",
+            "rate": "Пайыздык чен",
+            "type": "Түрү",
+            "name": "Аталышы",
+            "partners": "Өнөктөштөр"
+        },
+        "ru": {
+            "description": "Описание",
+            "advantages": "Преимущества",
+            "purposes": "Цели",
+            "subcategories": "Виды",
+            "special_programs": "Специальные программы",
+            "special_offers": "Специальные предложения",
+            "purpose": "Цель",
+            "amount": "Сумма",
+            "term": "Срок",
+            "rates": "Ставки",
+            "collateral": "Залог",
+            "effective_rate": "Эффективная ставка",
+            "commission": "Комиссия",
+            "processing": "Обработка",
+            "disbursement": "Выдача",
+            "repayment": "Погашение",
+            "app": "Приложение",
+            "own_funds": "Собственные средства",
+            "conditions": "Условия",
+            "company": "Компания",
+            "rate": "Ставка",
+            "type": "Тип",
+            "name": "Название",
+            "partners": "Партнеры"
+        }
+    }
+
+    for loan_type in loans:
+        type_name = loan_type.get('name', '').strip().lower()
+        type_id = loan_type.get('type', '')
+
+        # Проверка основного типа кредита
+        score = fuzz.ratio(loan_name, type_name)
+        if score >= threshold:
+            # Собираем имена подкатегорий и спецпрограмм
+            subcategory_names = [sub.get('name', '') for sub in loan_type.get('subcategories', [])]
+            special_program_names = [prog.get('name', '') for prog in loan_type.get('special_programs', [])]
+            # Обработка special_offers: извлечение всех имен из вложенных списков по регионам
+            special_offer_names = []
+            special_offers = loan_type.get('special_offers', {})
+            if isinstance(special_offers, dict):
+                for region, offers in special_offers.items():
+                    if isinstance(offers, list):
+                        special_offer_names.extend([offer.get('name', '') for offer in offers if isinstance(offer, dict)])
+                    else:
+                        logging.warning(f"{'Ожидался список для special_offers[{region}], получен {type(offers)}' if lang == 'ru' else f'special_offers[{region}] үчүн тизме күтүлдү, алынды {type(offers)}'}")
+            else:
+                logging.warning(f"{'Ожидался словарь для special_offers, получен {type(special_offers)}' if lang == 'ru' else f'special_offers үчүн сөздүк күтүлдү, алынды {type(special_offers)}'}")
+
+            matches.append({
+                "score": score,
+                "priority": 1,
+                "details": {
+                    "name": loan_type.get('name', ''),
+                    "description": loan_type.get('description', ''),
+                    "advantages": ", ".join(loan_type.get('advantages', [])),
+                    "purposes": ", ".join(loan_type.get('purposes', [])),
+                    "subcategories": f"[{", ".join(subcategory_names)}]",
+                    "special_programs": ", ".join(special_program_names),
+                    "special_offers": ", ".join(special_offer_names)
+                }
+            })
+
+        # Проверка подкатегорий
+        for subcategory in loan_type.get('subcategories', []):
+            sub_name = subcategory.get('name', '').strip().lower()
+            score = fuzz.ratio(loan_name, sub_name)
+            if score >= threshold:
+                matches.append({
+                    "score": score,
+                    "priority": 3,
+                    "details": {
+                        "type": f"{'Подкатегория' if lang == 'ru' else 'Субкатегория'} ({loan_type.get('name')})",
+                        "name": subcategory.get('name', ''),
+                        "purpose": subcategory.get('purpose', ''),
+                        "partners": ", ".join(loan_type.get('partners', [])),
+                        "amount": subcategory.get('amount', ''),
+                        "term": subcategory.get('term', ''),
+                        "rates": str(subcategory.get('rates', '')),
+                        "collateral": str(subcategory.get('collateral', '')) or str(subcategory.get('collateral_tiers', '')),
+                        "effective_rate": subcategory.get('effective_rate', ''),
+                        "commission": subcategory.get('commission', ''),
+                        "processing": subcategory.get('processing', ''),
+                        "disbursement": subcategory.get('disbursement', ''),
+                        "repayment": ", ".join(subcategory.get('repayment', [])),
+                        "app": subcategory.get('app', ''),
+                        "own_funds": str(subcategory.get('own_funds', ''))
+                    }
+                })
+
+        # Проверка специальных программ
+        for special_program in loan_type.get('special_programs', []):
+            prog_name = special_program.get('name', '').strip().lower()
+            score = fuzz.ratio(loan_name, prog_name)
+            if score >= threshold:
+                matches.append({
+                    "score": score,
+                    "priority": 3,
+                    "details": {
+                        "type": f"{'Специальная программа' if lang == 'ru' else 'Атайын программа'} ({loan_type.get('name')})",
+                        "name": special_program.get('name', ''),
+                        "purpose": special_program.get('purpose', ''),
+                        "amount": special_program.get('amount', ''),
+                        "term": special_program.get('term', ''),
+                        "rates": str(special_program.get('rates', '')),
+                        "collateral": str(special_program.get('collateral', '')),
+                        "effective_rate": special_program.get('effective_rate', ''),
+                        "conditions": special_program.get('conditions', '')
+                    }
+                })
+
+        # Проверка специальных предложений (ипотека)
+        for region in loan_type.get('special_offers', {}).values():
+            for offer in region:
+                offer_name = offer.get('name', '').strip().lower()
+                score = fuzz.ratio(loan_name, offer_name)
+                if score >= threshold:
+                    matches.append({
+                        "score": score,
+                        "priority": 3,
+                        "details": {
+                            "type": f"{'Специальное предложение' if lang == 'ru' else 'Атайын сунуш'} ({loan_type.get('name')})",
+                            "name": offer.get('name', ''),
+                            "company": offer.get('company', ''),
+                            "term": offer.get('term', ''),
+                            "rate": offer.get('rate', '')
+                        }
+                    })
+
+    if matches:
+        best_match = max(matches, key=lambda x: (x['priority'], x['score']))
+        best_details = best_match['details']
+
+        # Output string formatting with translated keys
+        translations = key_translations.get(lang, key_translations["ru"])
+        details_str = f"{'Кредит' if lang == 'ru' else 'Кредит'}: {best_details.get('name')}\n{translations['type']}: {best_details.get('type')}\n"
+        for key, value in best_details.items():
+            if key not in ['name', 'type'] and value:
+                key_formatted = translations.get(key, key.replace('_', ' ').title())
+                details_str += f"{key_formatted}: {value}\n"
+        return details_str.strip()
+
+    return not_found_messages.get(lang, not_found_messages["ru"])
+

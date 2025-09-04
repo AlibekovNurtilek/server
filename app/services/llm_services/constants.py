@@ -18,6 +18,10 @@ RESTRICTED_FUNCTIONS = [
     "get_outgoing_sum_for_period",
     "get_last_3_transfer_recipients",
     "get_largest_transaction",
+    "apply_for_loans",
+    "apply_for_cards",
+    "check_loan_status",
+    "check_card_status"
 ]
 
 # Error messages

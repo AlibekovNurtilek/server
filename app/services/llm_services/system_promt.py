@@ -28,6 +28,9 @@ def get_system_prompt(language: str) -> str:
     Возвращает системный промпт для AiBank MCP-ассистента.
     :param language: 'ky' (кыргызский, по умолчанию) или 'ru' (русский).
     """
+    global s_ky
+    global s_ru
+    s = s_ky if language == "ky" else s_ru
     docs = generate_function_docs(language)
 
     # Локальная дата/время (Бишкек)
@@ -41,7 +44,7 @@ def get_system_prompt(language: str) -> str:
         local_dt_str = now.strftime("%Y-%m-%d %H:%M")
 
     template = _load_prompt_template("system_prompt", language)
-    return template.format(local_dt_str=local_dt_str, docs=docs)
+    return (template.format(local_dt_str=local_dt_str, docs=docs)) + s
 
 def get_faq_system_prompt(lang: str, user: Optional[Customer], tool_response: str) -> str:
     """Generate system prompt for FAQ responses."""
@@ -54,3 +57,8 @@ def get_tool_response_system_prompt(lang: str, user: Optional[Customer], tool_re
     user_name = user.first_name if user else ("Колдонуучу" if lang == "ky" else "Пользователь")
     template = _load_prompt_template("tool_response_system_prompt", lang)
     return template.format(user_name=user_name, lang=lang, tool_response=tool_response)
+
+
+
+s_ky = 'Жеткиликтүү карталар тизмеси: Visa Classic Debit, Visa Gold Debit, Visa Platinum Debit, Mastercard Standard Debit, Mastercard Gold Debit, Mastercard Platinum Debit, Card Plus, Virtual Card, Visa Classic Credit, Visa Gold Credit, Visa Platinum Credit, Mastercard Standard Credit, Mastercard Gold Credit, Mastercard Platinum Credit, Elkart, Visa Campus Card, Жеткиликтүү депозиттер тизмеси: Demand Deposit, Classic Term Deposit, Replenishable Deposit, Standard Term Deposit, Online Deposit, Child Deposit, Government Treasury Bills, NBKR Notes, Жеткиликтүү насыялар тизмеси: Ар кандай максаттарга кредиттер, Онлайн кредит, Стандарттык керектөөчү кредит, Ыңгайлуу жашоо (KyrSEFF), АУЦАда билим алуу, Автокредиттер, Стандарттык автокредит, Автосалондор менен өнөктөштүк программасы алкагындагы кредиттер, Ипотека, Эркиндик турак жай комплекси, Prime Park турак жай комплекси, Орто-Сай клубдук үйү, Резиденс турак жай комплекси, Bellagio Resort, Talisman Village'
+s_ru = 'Список доступных карт: Visa Classic Debit, Visa Gold Debit, Visa Platinum Debit, Mastercard Standard Debit, Mastercard Gold Debit, Mastercard Platinum Debit, Card Plus, Virtual Card, Visa Classic Credit, Visa Gold Credit, Visa Platinum Credit, Mastercard Standard Credit, Mastercard Gold Credit, Mastercard Platinum Credit, Elkart, Visa Campus Card, Список доступных депозитов: Депозит до востребования, Классический срочный депозит, Пополняемый депозит, Стандартный срочный депозит, Онлайн депозит, Детский депозит, Государственные казначейские векселя, Ноты НБКР, Список доступных кредитов: Кредиты на различные цели, Онлайн кредит, Стандартный потребительский кредит, Удобная жизнь (KyrSEFF), Образование в АУЦА, Автокредиты, Стандартный автокредит, Кредиты в рамках программы партнерства с автосалонами, Ипотека, Жилой комплекс Эркиндик, Жилой комплекс Prime Park, Клубный дом Орто-Сай, Жилой комплекс Резиденс, Bellagio Resort, Talisman Village'

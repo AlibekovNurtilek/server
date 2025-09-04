@@ -17,6 +17,8 @@ from app.db.models import Customer
 # --- Доменные сервисы без БД ---
 from app.services.mcp_services.common_services import *  # noqa
 from app.services.mcp_services.personal_services import *  # noqa
+from app.services.mcp_services.loan_app_service import create_loan_application_improved, check_loan_application_status
+from app.services.mcp_services.card_app_service import apply_for_card, check_application_status as check_card_app_status
 
 # =====================================================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -45,6 +47,70 @@ async def get_balance_tool(customer_id: int, lang: str = "ky"):
             return "Колдонуучу табылган жок." if lang == "ky" else "Пользователь не найден."
         total, msg = await get_balance(session, customer, lang=lang)
         return msg
+
+
+@server.tool(
+    name="apply_for_loans",
+    description="Насыя учун арыз"
+)
+async def apply_for_loans(
+    loan_name: Optional[str] = None,
+    amount: Optional[float] = None,
+    term: Optional[int] = None,
+    customer_id: Optional[int] = None,
+    lang: Optional[str] = "ky"
+):
+    async with SessionLocal() as session:
+        result = await create_loan_application_improved(
+            session, customer_id, loan_name, amount, term, lang=lang
+        )
+        await session.commit()  # Коммитим транзакцию здесь
+        return result
+    
+
+
+
+@server.tool(
+    name="check_loan_status",
+    description="Крдет үчүн берилген арыздын статусун текшерет"
+)
+async def check_loan_status(app_id, customer_id, lang:str = "ky"):
+    async with SessionLocal() as session:
+        result = await check_loan_application_status(
+            session, customer_id, app_id, lang=lang
+        )
+        await session.commit()  # Коммитим транзакцию здесь
+        return result
+
+
+@server.tool(
+    name="apply_for_cards",
+    description="Карта учун арыз"
+)
+async def apply_for_cards(
+    card_name: Optional[str] = None,
+    customer_id: Optional[int] = None,
+    lang: Optional[str] = "ky"
+):
+    async with SessionLocal() as session:
+        result = await apply_for_card(
+            session, customer_id, card_name, lang=lang
+        )
+        await session.commit()  # Коммитим транзакцию здесь
+        return result
+
+
+@server.tool(
+    name="check_card_status",
+    description="Карта үчүн берилген арыздын статусун текшерет"
+)
+async def check_card_status(app_id, customer_id, lang:str = "ky"):
+    async with SessionLocal() as session:
+        result = await check_card_app_status(
+            session, customer_id, app_id, lang=lang
+        )
+        await session.commit()  # Коммитим транзакцию здесь
+        return result
 
 
 @server.tool(
@@ -740,9 +806,27 @@ async def get_online_deposits_tool(lang: str = "ky"):
     name="get_faq_by_category",
     description="Жалпы суроолорго FAQ маалыматтарын колдонуу менен жооп берет. LLM тек гана FAQ маалыматтарын колдонуу керек, жаңы маалымат ойлоп чыгарбоо керек."
 )
-async def get_faq_by_category_tool(category: str, question: str = None, lang: str = "ky"):
+async def get_faq_by_category_tool(category: str, lang: str = "ky"):
     result = get_faq_by_category(category, lang=lang)
     return " ".join(f"{'Суроо' if lang == 'ky' else 'Вопрос'}: {item['question']} {'Жооп' if lang == 'ky' else 'Ответ'}: {item['answer']} \n" for item in result)
+
+
+
+
+
+@server.tool(
+    name="list_all_loans",
+    description="Бардык насыялардын тизмесин кайтарат"
+)
+async def get_list_all_loans(lang: str = "ky"):
+    return list_all_loans(lang=lang)
+
+@server.tool(
+    name="get_loan_details",
+    description="Бардык насыялардын тизмесин кайтарат"
+)
+async def get_loan_details(loan_name: str, lang: str = "ky"):
+    return loan_details(loan_name=loan_name, lang=lang)
 
 
 if __name__ == "__main__":

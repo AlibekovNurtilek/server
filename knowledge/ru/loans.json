@@ -1,5 +1,5 @@
 {
-  "bank_name": "DemirBank",
+  "bank_name": "Ai Bank",
   "loan_application_process": {
     "steps": [
       "Подготовить необходимые документы",
@@ -53,8 +53,7 @@
           "commission": "без комиссии",
           "processing": "1 минута",
           "disbursement": "мгновенно на счет",
-          "repayment": ["онлайн через приложение", "в офисах банка"],
-          "app": "DemirBank app (Google Play, App Store)"
+          "repayment": ["онлайн через приложение", "в офисах банка"]
         },
         {
           "name": "Капитальный ремонт",
@@ -166,7 +165,7 @@
           "effective_rate": "от 24.36%"
         },
         {
-          "name": "Партнерская программа автосалонов",
+          "name": "Кредиты на основе партнерских программ автосалонов",
           "partners": ["Автоцентр Перекресток (Toyota)", "АзияМоторс (Mitsubishi, Mercedes, Hyundai)", "Эстокада (BMW)", "КиаМоторс"],
           "amount": "350,000 - 7,000,000 сом/USD",
           "term": "6-60 месяцев",
@@ -209,12 +208,12 @@
       ],
       "special_offers": {
         "Bishkek": [
-          {"name": "ЖК Эркиндик", "company": "SATKO", "term": "до 8 лет", "rate": "от 6.8%"},
-          {"name": "ЖК Prime Park", "company": "Нурзаман", "term": "до 8 лет", "rate": "от 9.6%"},
+          {"name": "Жилой комплекс Эркиндик", "company": "SATKO", "term": "до 8 лет", "rate": "от 6.8%"},
+          {"name": "Жилой комплекс Prime Park", "company": "Нурзаман", "term": "до 8 лет", "rate": "от 9.6%"},
           {"name": "Клубный дом Орто-Сай", "company": "А Групп", "term": "до 8 лет", "rate": "от 0%"}
         ],
         "Osh": [
-          {"name": "ЖК Резиденс", "company": "Нурзаман", "term": "до 8 лет", "rate": "от 6.5%"}
+          {"name": "Жилой комплекс Резиденс", "company": "Нурзаман", "term": "до 8 лет", "rate": "от 6.5%"}
         ],
         "Issyk_Kul": [
           {"name": "Bellagio Resort", "company": "Bellagio Development", "term": "до 8 лет", "rate": "от 4.5%"},
