@@ -57,8 +57,14 @@ class FunctionProcessor:
         """
         Process function calls and return results.
         
+        Args:
+            func_calls: List of function call strings to process
+            user: Optional Customer object containing user information
+            lang: Language code for the request
+        
         Returns:
-            Tuple of (results, is_faq_call)
+            Tuple of (results, is_faq_call) where results is a list of tool outputs
+            and is_faq_call indicates if any call was to get_faq_by_category
         """
         results: List[str] = []
         is_faq = False
@@ -88,7 +94,13 @@ class FunctionProcessor:
                 results.append(output or "")
                 
             except Exception as e:
-                logger.error("Error calling tool %s: %s", name, e)
+                logger.error(
+                    "Error processing function call %s with args %s: %s",
+                    name,
+                    kwargs,
+                    str(e),
+                    exc_info=True  # Включаем полный стек ошибки для детального логирования
+                )
                 results.append(f"Ошибка: {str(e)}")  # LLM will handle politely
-
+        
         return results, is_faq

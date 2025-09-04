@@ -30,17 +30,20 @@ def generate_function_docs(language: str = "ky") -> str:
     schemas = _get_schemas(language)
     lang = _norm_lang(language)
 
-    # Локализация служебных фраз
-    label_params = "Параметрлер" if lang == "ky" else "Параметры"
-    no_params = "Параметрлер жок" if lang == "ky" else "Параметры отсутствуют"
-    no_descr  = "Сүрөттөмө жок" if lang == "ky" else "нет описания"
-
     docs = []
     for fname, schema in schemas.items():
-        description = schema.get("description") or no_descr
+        doc_parts = [f"\t{fname}"]
+        description = schema.get("description")
         params = schema.get("parameters", {}).get("properties", {})
-        param_list = ", ".join(params.keys()) if params else no_params
-        docs.append(f"\t{fname} — {description}. {label_params}: {param_list}")
+        
+        if description:
+            doc_parts.append(f" — {description}")
+        if params:
+            param_list = ", ".join(params.keys())
+            label_params = "Параметрлер" if lang == "ky" else "Параметры"
+            doc_parts.append(f". {label_params}: {param_list}")
+            
+        docs.append("".join(doc_parts))
     return "\n".join(docs)
 
 def get_allowed_params(func_name: str, language: str = "ky") -> set:

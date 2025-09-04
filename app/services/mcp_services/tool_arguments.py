@@ -43,7 +43,13 @@ tools_params = {
     "get_government_securities": ["lang"],
     "get_child_deposits": ["lang"],
     "get_online_deposits": ["lang"],
-    "get_faq_by_category": ["category", "lang"]
+    "get_faq_by_category": ["category", "lang"],
+    "list_all_loans": ["lang"],
+    "get_loan_details": ["lang", "loan_name"],
+    "apply_for_loans": ["lang", "loan_name", "amount", "term", "customer_id"],
+    "apply_for_cards": ["lang", "card_name","customer_id"],
+    "check_loan_status": ["lang", "app_id","customer_id"],
+    "check_card_status": ["lang", "app_id","customer_id"]
 }
 
 

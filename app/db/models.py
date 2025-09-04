@@ -8,9 +8,26 @@ import enum
 
 from app.db.base import Base
 
+# ========================
+# Новые ENUM'ы для заявок
+# ========================
+
+class LoanApplicationStatus(str, enum.Enum):
+    """Статус заявки на кредит"""
+    pending = "pending"       # В ожидании
+    approved = "approved"     # Одобрена
+    rejected = "rejected"     # Отклонена
+    processing = "processing" # В обработке
+
+class CardApplicationStatus(str, enum.Enum):
+    """Статус заявки на карту"""
+    pending = "pending"       # В ожидании
+    approved = "approved"     # Одобрена
+    rejected = "rejected"     # Отклонена
+    processing = "processing" # В обработке
 
 # ========================
-# ENUM'ы — справочники значений
+# Существующие ENUM'ы (оставлены без изменений)
 # ========================
 
 class AccountType(str, enum.Enum):
@@ -82,7 +99,6 @@ class MessageRole(str, enum.Enum):
     assistant = "assistant" # Сообщение от ассистента
     system = "system"       # Системное сообщение
 
-
 # ========================
 # Таблицы
 # ========================
@@ -106,10 +122,10 @@ class Customer(Base):
     # Связи
     accounts: Mapped[List["Account"]] = relationship(back_populates="customer")
     loans: Mapped[List["Loan"]] = relationship(back_populates="customer")
-    # Убрали chats: Mapped[List["Chat"]]
+    loan_applications: Mapped[List["LoanApplication"]] = relationship(back_populates="customer")
+    card_applications: Mapped[List["CardApplication"]] = relationship(back_populates="customer")
 
 class Account(Base):
-
     __tablename__ = "accounts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -126,24 +142,19 @@ class Account(Base):
     # Связи
     customer: Mapped["Customer"] = relationship(back_populates="accounts")
     cards: Mapped[List["Card"]] = relationship(back_populates="account")
-
-    # 🔹 Разделяем транзакции на исходящие и входящие.
     outgoing_transactions: Mapped[List["Transaction"]] = relationship(
         "Transaction",
         back_populates="from_account",
         foreign_keys="Transaction.from_account_id",
-        # при необходимости можно добавить overlaps, если где-то пересекается конфигурация:
-        # overlaps="incoming_transactions,to_account"
     )
     incoming_transactions: Mapped[List["Transaction"]] = relationship(
         "Transaction",
         back_populates="to_account",
         foreign_keys="Transaction.to_account_id",
-        # overlaps="outgoing_transactions,from_account"
     )
+    card_applications: Mapped[List["CardApplication"]] = relationship(back_populates="account")
 
 class Card(Base):
-
     __tablename__ = "cards"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -159,22 +170,16 @@ class Card(Base):
     # Связь с аккаунтом
     account: Mapped["Account"] = relationship(back_populates="cards")
 
-
-# --- Transaction ---
 class Transaction(Base):
-
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-
-    # Явные источник/получатель
     from_account_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("accounts.id"), nullable=True, index=True
     )
     to_account_id: Mapped[Optional[int]] = mapped_column(
         ForeignKey("accounts.id"), nullable=True, index=True
     )
-
     transaction_type: Mapped[TransactionType] = mapped_column(Enum(TransactionType))
     amount: Mapped[Numeric] = mapped_column(Numeric(18, 2))
     currency: Mapped[str] = mapped_column(String(3))
@@ -188,10 +193,6 @@ class Transaction(Base):
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    # 🔹 РАНЬШЕ было так (ТЕПЕРЬ УДАЛЯЕМ):
-    # account: Mapped["Account"] = relationship(back_populates="transactions")
-
-    # 🔹 ТЕПЕРЬ две явные связи c указанием foreign_keys:
     from_account: Mapped[Optional["Account"]] = relationship(
         "Account",
         back_populates="outgoing_transactions",
@@ -203,12 +204,7 @@ class Transaction(Base):
         foreign_keys=[to_account_id],
     )
 
-
-
 class Loan(Base):
-    """
-    Кредиты, выданные клиентам
-    """
     __tablename__ = "loans"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -227,11 +223,7 @@ class Loan(Base):
     customer: Mapped["Customer"] = relationship(back_populates="loans")
     payments: Mapped[List["LoanPayment"]] = relationship(back_populates="loan")
 
-
 class LoanPayment(Base):
-    """
-    Платежи по кредитам
-    """
     __tablename__ = "loan_payments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -245,16 +237,12 @@ class LoanPayment(Base):
     # Связь с кредитом
     loan: Mapped["Loan"] = relationship(back_populates="payments")
 
-
 class Employee(Base):
-    """
-    Сотрудники банка (вместо таблицы users)
-    """
     __tablename__ = "employees"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(255))  # Хэш пароля (не хранить в открытом виде!)
+    password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole), default=EmployeeRole.manager)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -263,16 +251,12 @@ class Employee(Base):
     # Связи
     chats: Mapped[List["Chat"]] = relationship(back_populates="agent")
 
-
 class Chat(Base):
-    """
-    Чат между клиентом и ассистентом
-    """
     __tablename__ = "chats"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[Optional[str]] = mapped_column(String(255))
-    customer_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Убрали ForeignKey
+    customer_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     agent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     status: Mapped[ChatStatus] = mapped_column(Enum(ChatStatus), default=ChatStatus.open)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -281,13 +265,8 @@ class Chat(Base):
     # Связи
     messages: Mapped[List["Message"]] = relationship(back_populates="chat", cascade="all, delete-orphan")
     agent: Mapped[Optional["Employee"]] = relationship(back_populates="chats")
-    # Убрали связь customer: Mapped[Optional["Customer"]]
-
 
 class Message(Base):
-    """
-    Сообщение в чате
-    """
     __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -298,3 +277,47 @@ class Message(Base):
 
     # Связь с чатом
     chat: Mapped["Chat"] = relationship(back_populates="messages")
+
+# ========================
+# Новые таблицы для заявок
+# ========================
+
+class LoanApplication(Base):
+    """
+    Заявки на получение кредитов
+    """
+    __tablename__ = "loan_applications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
+    loan_type: Mapped[str] = mapped_column(String)
+    amount: Mapped[Numeric] = mapped_column(Numeric(18, 2))  # Сумма кредита
+    term_months: Mapped[int] = mapped_column(Integer)  # Срок в месяцах
+    interest_rate: Mapped[Numeric] = mapped_column(Numeric(5, 2))  # Процентная ставка
+    own_contribution: Mapped[Optional[Numeric]] = mapped_column(Numeric(18, 2))  # Собственный взнос
+    collateral: Mapped[Optional[str]] = mapped_column(Text)  # Күрөө
+    status: Mapped[LoanApplicationStatus] = mapped_column(Enum(LoanApplicationStatus), default=LoanApplicationStatus.pending)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Связь с клиентом
+    customer: Mapped["Customer"] = relationship(back_populates="loan_applications")
+
+class CardApplication(Base):
+    """
+    Заявки на получение карт
+    """
+    __tablename__ = "card_applications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"))
+    card_type: Mapped[CardType] = mapped_column(Enum(CardType))
+    card_name: Mapped[str] = mapped_column(String(50))
+    status: Mapped[CardApplicationStatus] = mapped_column(Enum(CardApplicationStatus), default=CardApplicationStatus.pending)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Связи
+    customer: Mapped["Customer"] = relationship(back_populates="card_applications")
+    account: Mapped["Account"] = relationship(back_populates="card_applications")

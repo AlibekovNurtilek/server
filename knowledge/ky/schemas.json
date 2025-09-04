@@ -96,6 +96,9 @@
     "name": "get_largest_transaction",
     "description": "Эң чоң транзакция (суммасы боюнча) жана анын багыты."
   },
+
+
+  
   "list_all_card_names": {
     "name": "list_all_card_names",
     "description": "Бардык карталардын тизмесин кайтарат."
@@ -108,25 +111,7 @@
       "properties": {
         "card_name": {
           "type": "string",
-          "description": "Карта аталышы",
-          "enum": [
-            "Visa Classic Debit",
-            "Visa Gold Debit",
-            "Visa Platinum Debit",
-            "Mastercard Standard Debit",
-            "Mastercard Gold Debit",
-            "Mastercard Platinum Debit",
-            "Card Plus",
-            "Virtual Card",
-            "Visa Classic Credit",
-            "Visa Gold Credit",
-            "Visa Platinum Credit",
-            "Mastercard Standard Credit",
-            "Mastercard Gold Credit",
-            "Mastercard Platinum Credit",
-            "Elkart",
-            "Visa Campus Card"
-          ]
+          "description": "Карта аталышы"
         }
       },
       "required": [
@@ -143,236 +128,13 @@
         "card_names": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": [
-              "Visa Classic Debit",
-              "Visa Gold Debit",
-              "Visa Platinum Debit",
-              "Mastercard Standard Debit",
-              "Mastercard Gold Debit",
-              "Mastercard Platinum Debit",
-              "Card Plus",
-              "Virtual Card",
-              "Visa Classic Credit",
-              "Visa Gold Credit",
-              "Visa Platinum Credit",
-              "Mastercard Standard Credit",
-              "Mastercard Gold Credit",
-              "Mastercard Platinum Credit",
-              "Elkart",
-              "Visa Campus Card"
-            ]
+            "type": "string"
           },
           "description": "Карталардын аттарынын тизмеси (2-4 карта)"
         }
       },
       "required": [
         "card_names"
-      ]
-    }
-  },
-  "get_card_limits": {
-    "name": "get_card_limits",
-    "description": "Карта аталышы боюнча лимиттерди кайтарат (ATM, POS, контактсыз ж.б.).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "card_name": {
-          "type": "string",
-          "description": "Карта аталышы",
-          "enum": [
-            "Visa Classic Debit",
-            "Visa Gold Debit",
-            "Visa Platinum Debit",
-            "Mastercard Standard Debit",
-            "Mastercard Gold Debit",
-            "Mastercard Platinum Debit",
-            "Card Plus",
-            "Virtual Card",
-            "Visa Classic Credit",
-            "Visa Gold Credit",
-            "Visa Platinum Credit",
-            "Mastercard Standard Credit",
-            "Mastercard Gold Credit",
-            "Mastercard Platinum Credit",
-            "Elkart",
-            "Visa Campus Card"
-          ]
-        }
-      },
-      "required": [
-        "card_name"
-      ]
-    }
-  },
-  "get_card_benefits": {
-    "name": "get_card_benefits",
-    "description": "Карта аталышы боюнча артыкчылыктарды жана өзгөчөлүктөрдү кайтарат.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "card_name": {
-          "type": "string",
-          "description": "Карта аталышы",
-          "enum": [
-            "Visa Classic Debit",
-            "Visa Gold Debit",
-            "Visa Platinum Debit",
-            "Mastercard Standard Debit",
-            "Mastercard Gold Debit",
-            "Mastercard Platinum Debit",
-            "Card Plus",
-            "Virtual Card",
-            "Visa Classic Credit",
-            "Visa Gold Credit",
-            "Visa Platinum Credit",
-            "Mastercard Standard Credit",
-            "Mastercard Gold Credit",
-            "Mastercard Platinum Credit",
-            "Elkart",
-            "Visa Campus Card"
-          ]
-        }
-      },
-      "required": [
-        "card_name"
-      ]
-    }
-  },
-  "get_cards_by_type": {
-    "name": "get_cards_by_type",
-    "description": "Карталарды түрү боюнча фильтрлейт (дебеттик/кредиттик).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "card_type": {
-          "type": "string",
-          "description": "Карта түрү",
-          "enum": [
-            "debit",
-            "credit"
-          ]
-        }
-      },
-      "required": [
-        "card_type"
-      ]
-    }
-  },
-  "get_cards_by_payment_system": {
-    "name": "get_cards_by_payment_system",
-    "description": "Карталарды төлөм системасы боюнча фильтрлейт (Visa/Mastercard).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "system": {
-          "type": "string",
-          "description": "Төлөм системасы",
-          "enum": [
-            "visa",
-            "mastercard"
-          ]
-        }
-      },
-      "required": [
-        "system"
-      ]
-    }
-  },
-  "get_cards_by_fee_range": {
-    "name": "get_cards_by_fee_range",
-    "description": "Карталарды жылдык акы диапазону боюнча фильтрлейт.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "min_fee": {
-          "type": "string",
-          "description": "Минималдуу жылдык акы (сом)"
-        },
-        "max_fee": {
-          "type": "string",
-          "description": "Максималдуу жылдык акы (сом)"
-        }
-      },
-      "required": []
-    }
-  },
-  "get_cards_by_currency": {
-    "name": "get_cards_by_currency",
-    "description": "Карталарды валюта боюнча фильтрлейт (KGS, USD, EUR).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "currency": {
-          "type": "string",
-          "description": "Валюта",
-          "enum": [
-            "KGS",
-            "USD",
-            "EUR"
-          ]
-        }
-      },
-      "required": [
-        "currency"
-      ]
-    }
-  },
-  "get_card_instructions": {
-    "name": "get_card_instructions",
-    "description": "Картанын колдонуу көрсөтмөлөрүн кайтарат (Card Plus, Virtual Card үчүн).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "card_name": {
-          "type": "string",
-          "description": "Карта аталышы",
-          "enum": [
-            "Card Plus",
-            "Virtual Card"
-          ]
-        }
-      },
-      "required": [
-        "card_name"
-      ]
-    }
-  },
-  "get_card_conditions": {
-    "name": "get_card_conditions",
-    "description": "Картанын шарттарын жана талаптарын кайтарат (Elkart үчүн).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "card_name": {
-          "type": "string",
-          "description": "Карта аталышы",
-          "enum": [
-            "Elkart"
-          ]
-        }
-      },
-      "required": [
-        "card_name"
-      ]
-    }
-  },
-  "get_cards_with_features": {
-    "name": "get_cards_with_features",
-    "description": "Белгилүү өзгөчөлүктөргө ээ карталарды табат.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "features": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Өзгөчөлүктөрдүн тизмеси"
-        }
-      },
-      "required": [
-        "features"
       ]
     }
   },
@@ -384,15 +146,11 @@
       "properties": {
         "criteria": {
           "type": "object",
-          "description": "Карта тандау критерийлери",
+          "description": "Карта тандау критерийлери (debit/credit)",
           "properties": {
             "type": {
               "type": "string",
-              "description": "Карта түрү (debit/credit)",
-              "enum": [
-                "debit",
-                "credit"
-              ]
+              "description": "Карта түрү (debit/credit)"
             },
             "max_fee": {
               "type": "integer",
@@ -400,12 +158,7 @@
             },
             "currency": {
               "type": "string",
-              "description": "Валюта",
-              "enum": [
-                "KGS",
-                "USD",
-                "EUR"
-              ]
+              "description": "Валюта (KGS, USD, EUR)"
             },
             "features": {
               "type": "array",
@@ -422,21 +175,12 @@
       ]
     }
   },
+
+
+
   "get_bank_info": {
     "name": "get_bank_info",
     "description": "Банк тууралуу негизги маалыматты кайтарат (аты, негизделген жылы, лицензия)."
-  },
-  "get_bank_mission": {
-    "name": "get_bank_mission",
-    "description": "Банктын миссиясын жана тарыхын кайтарат."
-  },
-  "get_bank_values": {
-    "name": "get_bank_values",
-    "description": "Банктын баалуулуктарын жана принциптерин кайтарат."
-  },
-  "get_ownership_info": {
-    "name": "get_ownership_info",
-    "description": "Банктын ээлик маалыматтарын кайтарат."
   },
   "get_branch_network": {
     "name": "get_branch_network",
@@ -450,33 +194,11 @@
     "name": "get_complete_about_us",
     "description": "Банк тууралуу толук маалыматты кайтарат."
   },
-  "get_about_us_section": {
-    "name": "get_about_us_section",
-    "description": "Банк тууралуу маалыматтын белгилүү бөлүмүн кайтарат.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "section": {
-          "type": "string",
-          "description": "Маалымат бөлүмү",
-          "enum": [
-            "bank_name",
-            "founded",
-            "license",
-            "mission",
-            "values",
-            "ownership",
-            "branches",
-            "contact",
-            "descr"
-          ]
-        }
-      },
-      "required": [
-        "section"
-      ]
-    }
-  },
+
+
+
+
+
   "list_all_deposit_names": {
     "name": "list_all_deposit_names",
     "description": "Бардык депозиттердин тизмесин кайтарат"
@@ -489,17 +211,7 @@
       "properties": {
         "deposit_name": {
           "type": "string",
-          "description": "Депозиттин аталышы",
-          "enum": [
-            "Demand Deposit",
-            "Classic Term Deposit",
-            "Replenishable Deposit",
-            "Standard Term Deposit",
-            "Online Deposit",
-            "Child Deposit",
-            "Government Treasury Bills",
-            "NBKR Notes"
-          ]
+          "description": "Депозиттин аталышы"
         }
       },
       "required": [
@@ -516,45 +228,13 @@
         "deposit_names": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": [
-              "Demand Deposit",
-              "Classic Term Deposit",
-              "Replenishable Deposit",
-              "Standard Term Deposit",
-              "Online Deposit",
-              "Child Deposit",
-              "Government Treasury Bills",
-              "NBKR Notes"
-            ]
+            "type": "string"
           },
           "description": "Салыштырыла турган депозиттердин аталыштары"
         }
       },
       "required": [
         "deposit_names"
-      ]
-    }
-  },
-  "get_deposits_by_currency": {
-    "name": "get_deposits_by_currency",
-    "description": "Депозиттерди валюта боюнча фильтрлейт (KGS, USD, EUR, RUB).",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "currency": {
-          "type": "string",
-          "description": "Валюта коду",
-          "enum": [
-            "KGS",
-            "USD",
-            "EUR",
-            "RUB"
-          ]
-        }
-      },
-      "required": [
-        "currency"
       ]
     }
   },
@@ -608,30 +288,6 @@
         }
       },
       "required": []
-    }
-  },
-  "get_deposits_with_replenishment": {
-    "name": "get_deposits_with_replenishment",
-    "description": "Толуктоого мүмкүндүк берген депозиттерди кайтарат."
-  },
-  "get_deposits_with_capitalization": {
-    "name": "get_deposits_with_capitalization",
-    "description": "Капитализация мүмкүндүгүн берген депозиттерди кайтарат."
-  },
-  "get_deposits_by_withdrawal_type": {
-    "name": "get_deposits_by_withdrawal_type",
-    "description": "Депозиттерди чыгаруу түрү боюнча фильтрлейт.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "withdrawal_type": {
-          "type": "string",
-          "description": "Чыгаруу түрү"
-        }
-      },
-      "required": [
-        "withdrawal_type"
-      ]
     }
   },
   "get_deposit_recommendations": {
@@ -688,23 +344,20 @@
     "name": "get_online_deposits",
     "description": "Онлайн ачылуучу депозиттерди кайтарат."
   },
+
+
+
+
+
   "get_faq_by_category": {
     "name": "get_faq_by_category",
-    "description": "Бул инструмент FAQ (Көп берилүүчү суроолор) маалымат базасынан жооп табуу үчүн колдонулат. Жооптор FAQдагы маалыматтарга гана негизделип, өзгөртүлбөй жана жаңы маалымат кошулбай кайтарылат. Эгер суроого жооп FAQда жок болсо, 'Бул суроого жооп FAQ базасында жок.' деп кайтарылат. Жооптун тили 'language' параметри менен аныкталат. Категориялар жана алардын мазмуну: \n- **cards**: банк карталары (карта алуу, жоготуу, бөгөт коюу, интернет-төлөмдөр, кредиттик лимит, коопсуздук).\n- **loans**: насыялар жана кредиттер (документтер, сумма, мөөнөт, төлөө жолдору, мөөнөтүнөн мурда төлөө).\n- **internet_banking**: интернет жана мобилдик банкинг (катталуу, кирүү, пароль калыбына келтирүү, төлөмдөр, QR Pay, коопсуздук).\n- **deposits**: депозиттер (эсеп ачуу, пайыздык чендер, мөөнөтүнөн мурда жабуу, коргоо).\n- **taxes_fines**: салыктар жана айып пулдар (онлайн төлөө, текшерүү, жеңилдик мөөнөтү).\n- **other**: башка суроолор (филиалдардын иш убактысы, акча которуу, байланыш номерлери, сейф ячейкалары).",
+    "description": "Бул инструмент FAQ (Көп берилүүчү суроолор) үчүн колдонулат. Категориялар жана алардын мазмуну: \n- **cards**: банк карталары (карта алуу, жоготуу, бөгөт коюу, интернет-төлөмдөр, кредиттик лимит, коопсуздук).\n- **loans**: насыялар жана кредиттер (документтер, сумма, мөөнөт, төлөө жолдору, мөөнөтүнөн мурда төлөө).\n- **internet_banking**: интернет жана мобилдик банкинг (катталуу, кирүү, пароль калыбына келтирүү, төлөмдөр, QR Pay, коопсуздук).\n- **deposits**: депозиттер (эсеп ачуу, пайыздык чендер, мөөнөтүнөн мурда жабуу, коргоо).\n- **taxes_fines**: салыктар жана айып пулдар (онлайн төлөө, текшерүү, жеңилдик мөөнөтү).\n- **other**: башка суроолор (филиалдардын иш убактысы, акча которуу, байланыш номерлери, сейф ячейкалары).",
     "parameters": {
       "type": "object",
       "properties": {
         "category": {
           "type": "string",
-          "description": "FAQдагы категория. Жооп издөө үчүн ушул категориядагы суроо-жооптор гана колдонулат.",
-          "enum": [
-            "cards",
-            "loans",
-            "internet_banking",
-            "deposits",
-            "taxes_fines",
-            "other"
-          ]
+          "description": "FAQдагы категория. Жооп издөө үчүн ушул категориядагы суроо-жооптор гана колдонулат."
         },
         "question": {
           "type": "string",
@@ -713,6 +366,102 @@
       },
       "required": [
         "category"
+      ]
+    }
+  },
+
+
+
+
+  "list_all_loans":{
+    "name": "list_all_loans",
+    "description": "Бардык насыялардын тизмесин кайтарат"
+  },
+  "get_loan_details":{
+    "name": "get_loan_details",
+    "description": "Крдетиттин түрү боюнча деталдуу маалымат",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "loan_name": {
+          "type": "string",
+          "description": "кредиттин аталышы"
+        }
+      },
+      "required": [
+        "loan_name"
+      ]
+    }
+  },
+  "apply_for_loans":{
+    "name": "apply_for_loans",
+    "description": "Кредит алуу учун арыз беруу",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "loan_name": {
+          "type": "string",
+          "description": "кредиттин аталышы"
+        },
+        "amount": {
+          "type": "string",
+          "description": "насыя көлөмү"
+        },
+        "term": {
+          "type": "string",
+          "description": "мөөнөтү"
+        }
+      },
+      "required": [
+        "loan_name", "amount", "ammount"
+      ]
+    }
+  },
+  "apply_for_cards":{
+    "name": "apply_for_cards",
+    "description": "Карта алуу учун арыз беруу",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "card_name": {
+          "type": "string",
+          "description": "карта аталышы"
+        }
+      },
+      "required": [
+        "card_name"
+      ]
+    }
+  },
+  "check_loan_status":{
+    "name": "check_loan_status",
+    "description": "Крдет үчүн берилген арыздын статусун текшерет",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string",
+          "description": "арыздын номери"
+        }
+      },
+      "required": [
+        "app_id"
+      ]
+    }
+  },
+  "check_card_status":{
+    "name": "check_card_status",
+    "description": "Карта үчүн берилген арыздын статусун текшерет",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string",
+          "description": "арыздын номери"
+        }
+      },
+      "required": [
+        "app_id"
       ]
     }
   }

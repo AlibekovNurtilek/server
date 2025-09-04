@@ -17,6 +17,7 @@ from app.db.models import (
     TransactionType,
     TransactionStatus,
     AccountStatus,
+    LoanType, LoanApplication, LoanApplicationStatus
 )
 import logging
 logger = logging.getLogger(__name__)
@@ -515,3 +516,52 @@ async def get_largest_transaction(
         },
         None,
     )
+
+async def create_loan_application(
+    session: AsyncSession,
+    customer_id: int,
+    loan_name: str,
+    amount: Decimal | int | str,
+    term: int,
+    *,
+    lang: str = "ky"
+) -> tuple[bool, str]:
+    try:
+        amount = Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    except (InvalidOperation, ValueError):
+        return False, _t(lang, "wrong_amount")
+
+    if amount < 50000:
+        return False, _t(lang, "wrong_amount")
+    # if not 6 <= term <= 36:
+    #     return False, _t(lang, "wrong_term")
+
+    customer = await session.get(Customer, customer_id)
+    if not customer:
+        return False, _t(lang, "user_not_found", name=customer_id)
+
+    # try:
+    #     loan_type = LoanType[loan_name]
+    # except KeyError:
+    #     return False, _t(lang, "invalid_loan_type")
+
+    loan_type = loan_name
+
+    interest_rate = 24.00
+    own_contribution = amount * Decimal("0.3")
+    collateral = "1 кепил берүүчү" if amount <= 300000 else "1 кепил берүүчү + унаа"
+
+    application = LoanApplication(
+        customer_id=customer_id,
+        loan_type=loan_type,
+        amount=amount,
+        term_months=term,
+        interest_rate=interest_rate,
+        own_contribution=own_contribution,
+        collateral=collateral,
+        status=LoanApplicationStatus.pending
+    )
+    session.add(application)
+    await session.flush()
+
+    return ("Операция ийгиликтүү ишке ашты, арыздын ID си  #245d")
