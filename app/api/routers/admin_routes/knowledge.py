@@ -16,7 +16,6 @@ from app.services.knowledge_services.loans_service import LoansService
 from app.schemas.loan_schemas import RequiredDocuments
 
 
-
 KNOWLEDGE_BASE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", "knowledge"))
 
 about_us_service = AboutUsService(base_dir=KNOWLEDGE_BASE_DIR)
@@ -274,12 +273,6 @@ async def update_prompt(lang: str = "ky", prompt_key: str = None, data: dict = N
 
 
 
-from app.services.knowledge_services.loans_service import LoansService
-import logging
-
-logger = logging.getLogger(__name__)
-
-router = APIRouter(prefix="/loans", tags=["loans"])
 
 # Pydantic model for loan_application_process
 class LoanApplicationProcess(BaseModel):
@@ -291,7 +284,7 @@ def get_loan_service():
     base_dir = Path("knowledge")  # Adjust the base directory as needed
     return LoansService(base_dir=base_dir)
 
-@router.get("/application-process")
+@router.get("/loans/application-process")
 async def get_loan_application_process(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
     try:
         return await loan_service.get_loan_application_process(lang)
@@ -300,7 +293,7 @@ async def get_loan_application_process(lang: str = "ky", loan_service: LoansServ
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
 
-@router.patch("/application-process")
+@router.patch("/loans/application-process")
 async def update_loan_application_process(
     lang: str = "ky",
     loan_data: LoanApplicationProcess = None,
@@ -319,7 +312,7 @@ async def update_loan_application_process(
 
 
 
-@router.get("/required-documents")
+@router.get("/loans/required-documents")
 async def get_required_documents(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
     try:
         return await loan_service.get_required_documents(lang)
@@ -328,7 +321,7 @@ async def get_required_documents(lang: str = "ky", loan_service: LoansService = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
 
-@router.patch("/required-documents")
+@router.patch("/loans/required-documents")
 async def update_required_documents(
     lang: str = "ky",
     documents_data: RequiredDocuments = None,
@@ -348,7 +341,7 @@ async def update_required_documents(
 
 
 
-@router.get("/loan-products")
+@router.get("/loans/loan-products")
 async def get_loan_products(
     lang: str = "ky",
     loan_service: LoansService = Depends(get_loan_service)
@@ -362,7 +355,7 @@ async def get_loan_products(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
-@router.patch("/loan-products")
+@router.patch("/loans/loan-products")
 async def patch_loan_products(
     loan_products_data: List[dict], 
     lang: str = "ky",
@@ -378,7 +371,7 @@ async def patch_loan_products(
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
 
-@router.get("/loan-products/{loan_type}/subcategories")
+@router.get("/loans/loan-products/{loan_type}/subcategories")
 async def get_loan_subcategories(
     loan_type: str,
     lang: str = "ky",
@@ -391,7 +384,7 @@ async def get_loan_subcategories(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
-@router.patch("/loan-products/{loan_type}/subcategories")
+@router.patch("/loans/loan-products/{loan_type}/subcategories")
 async def patch_loan_subcategories(
     loan_type: str,
     subcategories_data: List[dict],  # список субкатегорий для обновления
@@ -406,7 +399,7 @@ async def patch_loan_subcategories(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
-@router.get("/loan-products/{loan_type}/special-offers")
+@router.get("/loans/loan-products/{loan_type}/special-offers")
 async def get_loan_special_offers(
     loan_type: str,
     lang: str = "ky",
@@ -422,7 +415,7 @@ async def get_loan_special_offers(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
-@router.patch("/loan-products/{loan_type}/special-offers")
+@router.patch("/loans/loan-products/{loan_type}/special-offers")
 async def patch_special_offers(
     loan_type: str,
     special_offers_data: dict,  
@@ -438,7 +431,7 @@ async def patch_special_offers(
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
 
-@router.get("/loan-products/{loan_type}/special-programs")
+@router.get("/loans/loan-products/{loan_type}/special-programs")
 async def get_loan_special_programs(
     loan_type: str,
     lang: str = "ky",
@@ -454,7 +447,7 @@ async def get_loan_special_programs(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
 
-@router.patch("/loan-products/{loan_type}/special-programs")
+@router.patch("/loans/loan-products/{loan_type}/special-programs")
 async def patch_special_programs(
     loan_type: str,
     special_programs_data: List[dict], 
