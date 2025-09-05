@@ -2,6 +2,7 @@ from datetime import date, datetime
 from pydantic import BaseModel
 from app.db.models import LoanType, LoanStatus
 from typing import Dict
+from typing import List
 
 
 class LoanRead(BaseModel):
@@ -23,3 +24,10 @@ class LoanRead(BaseModel):
 
 class RequiredDocuments(BaseModel):
     documents: Dict[str, str] 
+
+# Loans info
+
+
+class LoanApplicationProcess(BaseModel):
+    steps: List[str]
+    review_time: str

@@ -14,7 +14,7 @@ from app.services.knowledge_services.schemas import SchemasService
 from app.services.knowledge_services.system_prompts_service import SystemPromptsService
 from app.services.knowledge_services.loans_service import LoansService
 from app.schemas.loan_schemas import RequiredDocuments
-
+from app.schemas.loan_schemas import LoanApplicationProcess
 
 KNOWLEDGE_BASE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", "knowledge"))
 
@@ -274,17 +274,14 @@ async def update_prompt(lang: str = "ky", prompt_key: str = None, data: dict = N
 
 
 
-# Pydantic model for loan_application_process
-class LoanApplicationProcess(BaseModel):
-    steps: List[str]
-    review_time: str
+
 
 # Dependency to initialize LoansService
 def get_loan_service():
     base_dir = Path("knowledge")  # Adjust the base directory as needed
     return LoansService(base_dir=base_dir)
 
-@router.get("/loans/application-process")
+@router.get("/loans/application-process",   response_model=LoanApplicationProcess)
 async def get_loan_application_process(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
     try:
         return await loan_service.get_loan_application_process(lang)
