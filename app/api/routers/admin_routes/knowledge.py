@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any
 from pydantic import BaseModel
 from fastapi import Depends, FastAPI
+from fastapi import Body
 
 from app.services.knowledge_services.about_us import AboutUsService
 from app.services.knowledge_services.cards import CardsService
@@ -290,25 +291,6 @@ async def get_loan_application_process(lang: str = "ky", loan_service: LoansServ
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
 
-@router.patch("/loans/application-process")
-async def update_loan_application_process(
-    lang: str = "ky",
-    loan_data: LoanApplicationProcess = None,
-    loan_service: LoansService = Depends(get_loan_service)
-):
-    
-    if loan_data is None:
-        raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
-    
-    try:
-        return await loan_service.update_loan_application_process(lang, loan_data.dict())
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
-
-
-
 @router.get("/loans/required-documents")
 async def get_required_documents(lang: str = "ky", loan_service: LoansService = Depends(get_loan_service)):
     try:
@@ -318,22 +300,22 @@ async def get_required_documents(lang: str = "ky", loan_service: LoansService = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
 
-@router.patch("/loans/required-documents")
-async def update_required_documents(
-    lang: str = "ky",
-    documents_data: RequiredDocuments = None,
-    loan_service: LoansService = Depends(get_loan_service)
-):
+# @router.patch("/loans/required-documents")
+# async def update_required_documents(
+#     lang: str = "ky",
+#     documents_data: RequiredDocuments = None,
+#     loan_service: LoansService = Depends(get_loan_service)
+# ):
    
-    if documents_data is None:
-        raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
+#     if documents_data is None:
+#         raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
     
-    try:
-        return await loan_service.update_required_documents(lang, documents_data.dict())
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")    
+#     try:
+#         return await loan_service.update_required_documents(lang, documents_data.dict())
+#     except HTTPException as e:
+#         raise e
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")    
 
 
 
