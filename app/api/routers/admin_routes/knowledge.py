@@ -300,24 +300,22 @@ async def get_required_documents(lang: str = "ky", loan_service: LoansService = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера, {lang}, {loan_service.base_dir}")
 
-# @router.patch("/loans/required-documents")
-# async def update_required_documents(
-#     lang: str = "ky",
-#     documents_data: RequiredDocuments = None,
-#     loan_service: LoansService = Depends(get_loan_service)
-# ):
-   
-#     if documents_data is None:
-#         raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
+@router.patch("/loans/required-documents")
+async def update_required_documents(
+    lang: str = "ky",
+    documents_data: RequiredDocuments = Body(...),
+    loan_service: LoansService = Depends(get_loan_service)
+):
+    if not documents_data:
+        raise HTTPException(status_code=400, detail="Тело запроса не может быть пустым")
     
-#     try:
-#         return await loan_service.update_required_documents(lang, documents_data.dict())
-#     except HTTPException as e:
-#         raise e
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")    
-
-
+    try:
+        # exclude_unset=True чтобы обновлять только те поля, которые пришли
+        return await loan_service.update_required_documents(lang, documents_data.dict(exclude_unset=True))
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
 
 @router.get("/loans/loan-products")
@@ -442,3 +440,4 @@ async def patch_special_programs(
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка сервера: {str(e)}")
+

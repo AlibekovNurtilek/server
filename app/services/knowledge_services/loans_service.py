@@ -155,31 +155,42 @@ class LoansService:
             logger.error(f"Неизвестная ошибка при чтении файла {file_path}: {str(e)}")
             raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
-    async def update_loan_products(self, lang: str, loan_products_data: list) -> dict:
-            """Обновляет содержимое loan_products в loans.json для указанного языка."""
-            file_path = self._get_file_path(lang)
-            logger.debug(f"Обновление файла: {file_path}")
+    async def update_loan_products(self, lang: str, loan_products_data: list) -> list:
+        """Обновляет только указанные поля в loan_products без удаления других данных (без id)."""
+        file_path = self._get_file_path(lang)
+        logger.debug(f"Обновление файла: {file_path}")
 
-            try:
-                if file_path.exists():
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        existing_data = json.load(file)
+        try:
+            if file_path.exists():
+                with open(file_path, "r", encoding="utf-8") as file:
+                    existing_data = json.load(file)
+            else:
+                existing_data = {}
+
+            existing_loan_products = existing_data.get("loan_products", [])
+
+            # Обновляем по позиции
+            for i, update_item in enumerate(loan_products_data):
+                if i < len(existing_loan_products):
+                    # Обновляем только указанные поля
+                    existing_loan_products[i].update(update_item)
                 else:
-                    existing_data = {}
+                    # Если позиции нет — добавляем новый элемент
+                    existing_loan_products.append(update_item)
 
-                existing_data["loan_products"] = loan_products_data
+            existing_data["loan_products"] = existing_loan_products
 
-                file_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(file_path, "w", encoding="utf-8") as file:
-                    json.dump(existing_data, file, ensure_ascii=False, indent=2)
-                logger.info(f"Файл успешно обновлён: {file_path}")
-                return {"status": "success"}
-            except json.JSONDecodeError as e:
-                logger.error(f"Ошибка парсинга JSON в файле {file_path}: {str(e)}")
-                raise HTTPException(status_code=500, detail="Ошибка при чтении файла")
-            except Exception as e:
-                logger.error(f"Ошибка при записи файла {file_path}: {str(e)}")
-                raise HTTPException(status_code=500, detail="Ошибка при обновлении файла")
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as file:
+                json.dump(existing_data, file, ensure_ascii=False, indent=2)
+
+            return existing_data["loan_products"]
+
+        except Exception as e:
+            logger.error(f"Ошибка при записи файла {file_path}: {str(e)}")
+            raise HTTPException(status_code=500, detail="Ошибка при обновлении файла")
+
+
 
     async def get_subcategories(self, lang: str, loan_type: str) -> list:
         """Возвращает subcategories для указанного типа кредита."""
